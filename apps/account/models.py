@@ -8,7 +8,7 @@ class UserManager(BaseUserManager):
     use_in_migrations = True
 
     def _create_user(self, email, password, **extra_fields):
-        """Create and save a User with the given email and password."""
+        """Create and save a User with the given email, password and role."""
         if not email:
             raise ValueError('The given email must be set')
         email = self.normalize_email(email)
@@ -18,7 +18,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_user(self, email, password=None, **extra_fields):
-        """Create and save a regular User with the given email and password."""
+        """Create and save a regular User with the given email, password and role."""
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
         return self._create_user(email, password, **extra_fields)
@@ -50,7 +50,7 @@ class User(AbstractUser):
     role = models.CharField(max_length=15, choices=ROLE_CHOICES)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['role']
 
     objects = UserManager()
 
