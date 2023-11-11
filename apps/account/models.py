@@ -7,18 +7,33 @@ class UserManager(BaseUserManager):
 
     use_in_migrations = True
 
+    @staticmethod
+    def _create_role_profile(user, extra_fields):
+        role = extra_fields.get('role', '')
+
+        if role == 'student':
+            Student.objects.create(user=user)
+        elif role == 'tutor':
+            first_name = extra_fields.get('first_name', '')
+            last_name = extra_fields.get('last_name', '')
+            Tutor.objects.create(user=user, first_name=first_name, last_name=last_name)
+
     def _create_user(self, email, password, **extra_fields):
         """Create and save a User with the given email, password and role."""
         if not email:
             raise ValueError('The given email must be set')
+
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
+
+        self._create_role_profile(user, extra_fields)
+
         return user
 
     def create_user(self, email, password=None, **extra_fields):
-        """Create and save a regular User with the given email, password and role."""
+        """Create and save a regular User with the given email, password and role profile."""
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
         return self._create_user(email, password, **extra_fields)
@@ -73,5 +88,5 @@ class Student(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return f'{self.last_name} {self.first_name}'
+    # def __str__(self):
+    #     return f'{self.last_name} {self.first_name}'
