@@ -5,10 +5,10 @@ from rest_framework import mixins, viewsets, status
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.decorators import action
 from apps.education_plan.models import Invitations, Module
 from apps.education_plan.serializers import InvitationsSerializer, ModuleSerializer
 from TutorToolkit.permissions import IsTutor, IsTutorCreator
+from apps.education_plan.services import StudentInvitationService
 
 
 class InvitationsViewSet(mixins.ListModelMixin,
@@ -62,21 +62,6 @@ class AddStudentToInvitations(APIView):
             return Response({'detail': 'Приглашением может воспользоваться только студент.'},
                             status=status.HTTP_403_FORBIDDEN)
 
-        invite = Invitations.objects.filter(invite_code=invite_code).first()
-        if not invite:
-            return Response({'detail': 'Приглашение с данным кодом не найдено.'}, status=status.HTTP_404_NOT_FOUND)
-
-        if invite.student == request.user.student:
-            return Response({'detail': 'Вы уже добавлены к этому учителю.'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        if invite.student:
-            return Response({'detail': 'Приглашение использовано другим студентом.'},
-                            status=status.HTTP_400_BAD_REQUEST)
-
         student = request.user.student
-
-        invite.student = student
-        invite.status = 'active'
-        invite.save()
-
-        return Response({'detail': 'Студент добавлен к учителю.'}, status=status.HTTP_200_OK)
+        response = StudentInvitationService.add_student_to_invitation(invite_code, student)
+        return Response(response)

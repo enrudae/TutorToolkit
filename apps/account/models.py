@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.exceptions import ValidationError
 from django.db import models
+from apps.education_plan.services import StudentInvitationService
 
 
 class UserManager(BaseUserManager):
@@ -7,36 +9,44 @@ class UserManager(BaseUserManager):
 
     use_in_migrations = True
 
-    @staticmethod
-    def _create_role_profile(user, extra_fields):
-        role = extra_fields.get('role', '')
-
-        if role == 'student':
-            Student.objects.create(user=user)
-        elif role == 'tutor':
-            first_name = extra_fields.get('first_name', '')
-            last_name = extra_fields.get('last_name', '')
-            Tutor.objects.create(user=user, first_name=first_name, last_name=last_name)
-
     def _create_user(self, email, password, **extra_fields):
         """Create and save a User with the given email, password and role."""
-        if not email:
-            raise ValueError('The given email must be set')
-
         email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+        role = extra_fields.get('role', '')
+        user = self.model(email=email, role=role)
         user.set_password(password)
         user.save(using=self._db)
+        return user
 
-        self._create_role_profile(user, extra_fields)
+    def _create_tutor(self, email, password, **extra_fields):
+        user = self._create_user(email, password, **extra_fields)
+        first_name = extra_fields.get('first_name', '')
+        last_name = extra_fields.get('last_name', '')
+        Tutor.objects.create(user=user, first_name=first_name, last_name=last_name)
+        return user
 
+    def _create_student(self, email, password, **extra_fields):
+        invite_code = extra_fields.get('invite_code', '')
+        invite, error_response, status_code = StudentInvitationService.check_available_invite_code(invite_code)
+
+        if not invite:
+            raise ValidationError(error_response)
+
+        user = self._create_user(email, password, **extra_fields)
+        student = Student.objects.create(user=user)
+
+        StudentInvitationService.add_student_to_invitation(invite_code, student)
         return user
 
     def create_user(self, email, password=None, **extra_fields):
         """Create and save a regular User with the given email, password and role profile."""
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        return self._create_user(email, password, **extra_fields)
+
+        role = extra_fields.get('role', '')
+        if role == 'tutor':
+            return self._create_tutor(email, password, **extra_fields)
+        return self._create_student(email, password, **extra_fields)
 
     def create_superuser(self, email, password, **extra_fields):
         """Create and save a SuperUser with the given email and password."""
