@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
-SECRET_KEY = 'django-insecure-+82toj=0emqsngi43!=t4f28h!iolp_)%nd7=xlt=805m2lgoq'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG')
 
@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'djoser',
+    'drf_yasg',
 
     'apps.account.apps.AccountConfig',
     'apps.education_plan.apps.EducationPlanConfig',
@@ -184,6 +185,7 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=7),
 }
+
 
 
 # LOGGING = {
