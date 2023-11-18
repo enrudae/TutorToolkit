@@ -35,7 +35,7 @@ class UserManager(BaseUserManager):
         user = self._create_user(email, password, **extra_fields)
         student = Student.objects.create(user=user)
 
-        StudentInvitationService.add_student_to_invitation(invite_code, student)
+        StudentInvitationService.add_student_to_education_plan(invite_code, student)
         return user
 
     def create_user(self, email, password=None, **extra_fields):

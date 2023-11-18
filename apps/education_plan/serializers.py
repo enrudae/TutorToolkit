@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from apps.education_plan.models import Invitations, Module, Card, Label
+from apps.education_plan.models import EducationPlan, Module, Card, Label
 
 
-class InvitationsSerializer(serializers.ModelSerializer):
+class EducationPlanSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Invitations
+        model = EducationPlan
         fields = ('tutor', 'student', 'invite_code', 'status', 'student_first_name', 'student_last_name')
         read_only_fields = ('tutor', 'student', 'invite_code')
 

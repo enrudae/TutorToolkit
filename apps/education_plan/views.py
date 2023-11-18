@@ -5,21 +5,21 @@ from rest_framework import mixins, viewsets, status
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from apps.education_plan.models import Invitations, Module
-from apps.education_plan.serializers import InvitationsSerializer, ModuleSerializer
+from apps.education_plan.models import EducationPlan, Module
+from apps.education_plan.serializers import EducationPlanSerializer, ModuleSerializer
 from TutorToolkit.permissions import IsTutor, IsTutorCreator
 from apps.education_plan.services import StudentInvitationService
 
 
-class InvitationsViewSet(mixins.ListModelMixin,
-                         mixins.CreateModelMixin,
-                         viewsets.GenericViewSet):
-    serializer_class = InvitationsSerializer
+class EducationPlanViewSet(mixins.ListModelMixin,
+                           mixins.CreateModelMixin,
+                           viewsets.GenericViewSet):
+    serializer_class = EducationPlanSerializer
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Invitations.objects.filter(
+        queryset = EducationPlan.objects.filter(
             Q(tutor=user.tutor) if user.role == 'tutor' else Q(student=user.student)
         )
         return queryset
@@ -43,8 +43,8 @@ class GetEducationPlan(ListAPIView):
 
     def get_object(self):
         user = self.request.user
-        invitation_id = self.kwargs.get('invitation_id')
-        invitation = Invitations.objects.filter(
+        invitation_id = self.kwargs.get('plan_id')
+        invitation = EducationPlan.objects.filter(
             Q(id=invitation_id) &
             Q(tutor=user.tutor) if user.role == 'tutor' else Q(student=user.student)
         ).first()
@@ -56,12 +56,12 @@ class GetEducationPlan(ListAPIView):
         return modules
 
 
-class AddStudentToInvitations(APIView):
+class AddStudentToEducationPlan(APIView):
     def post(self, request, invite_code):
         if request.user.role != 'student':
             return Response({'detail': 'Приглашением может воспользоваться только студент.'},
                             status=status.HTTP_403_FORBIDDEN)
 
         student = request.user.student
-        response = StudentInvitationService.add_student_to_invitation(invite_code, student)
+        response = StudentInvitationService.add_student_to_education_plan(invite_code, student)
         return Response(response)

@@ -4,7 +4,7 @@ from django.db import models
 from apps.account.models import Tutor, Student
 
 
-class Invitations(models.Model):
+class EducationPlan(models.Model):
     tutor = models.ForeignKey(Tutor, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE, blank=True, null=True)
     invite_code = models.CharField(max_length=8, unique=True, db_index=True)
@@ -50,7 +50,7 @@ class Label(models.Model):
 
 class Module(models.Model):
     title = models.CharField(max_length=25)
-    plan = models.ForeignKey(Invitations, on_delete=models.CASCADE)
+    plan = models.ForeignKey(EducationPlan, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
