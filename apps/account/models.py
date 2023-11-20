@@ -83,7 +83,6 @@ class User(AbstractUser):
 class Tutor(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    patronymic = models.CharField(max_length=50, blank=True, null=True)
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
@@ -92,9 +91,6 @@ class Tutor(models.Model):
 
 
 class Student(models.Model):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    patronymic = models.CharField(max_length=50, blank=True, null=True)
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 

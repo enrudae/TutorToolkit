@@ -1,18 +1,17 @@
 from django.db.models import Q
-from django.http import Http404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import mixins, viewsets, status
-from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from apps.education_plan.models import EducationPlan, Module
-from apps.education_plan.serializers import EducationPlanSerializer, ModuleSerializer
+from apps.education_plan.models import EducationPlan
+from apps.education_plan.serializers import EducationPlanSerializer, ModulesInEducationPlanSerializer
 from TutorToolkit.permissions import IsTutor, IsTutorCreator
 from apps.education_plan.services import StudentInvitationService
 
 
 class EducationPlanViewSet(mixins.ListModelMixin,
                            mixins.CreateModelMixin,
+                           mixins.RetrieveModelMixin,
                            viewsets.GenericViewSet):
     serializer_class = EducationPlanSerializer
     permission_classes = (IsAuthenticated,)
@@ -36,24 +35,10 @@ class EducationPlanViewSet(mixins.ListModelMixin,
             return [IsAuthenticated(), IsTutorCreator()]
         return super().get_permissions()
 
-
-class GetEducationPlan(ListAPIView):
-    serializer_class = ModuleSerializer
-    queryset = Module.objects.all()
-
-    def get_object(self):
-        user = self.request.user
-        invitation_id = self.kwargs.get('plan_id')
-        invitation = EducationPlan.objects.filter(
-            Q(id=invitation_id) &
-            Q(tutor=user.tutor) if user.role == 'tutor' else Q(student=user.student)
-        ).first()
-
-        if not invitation:
-            raise Http404('Учебного плана с таким id не найдено')
-
-        modules = invitation.module_set.all()
-        return modules
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return ModulesInEducationPlanSerializer
+        return EducationPlanSerializer
 
 
 class AddStudentToEducationPlan(APIView):

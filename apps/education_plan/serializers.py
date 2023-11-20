@@ -1,12 +1,15 @@
 from rest_framework import serializers
 from apps.education_plan.models import EducationPlan, Module, Card, Label
+from apps.account.serializers import TutorSerializer
 
 
 class EducationPlanSerializer(serializers.ModelSerializer):
+    tutor = TutorSerializer(read_only=True)
+
     class Meta:
         model = EducationPlan
-        fields = ('tutor', 'student', 'invite_code', 'status', 'student_first_name', 'student_last_name')
-        read_only_fields = ('tutor', 'student', 'invite_code')
+        fields = ('id', 'tutor', 'invite_code', 'status', 'student_first_name', 'student_last_name')
+        read_only_fields = ('id', 'tutor', 'invite_code')
 
 
 class LabelSerializer(serializers.ModelSerializer):
@@ -31,3 +34,11 @@ class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Module
         fields = ('id', 'title', 'plan', 'cards')
+
+
+class ModulesInEducationPlanSerializer(serializers.ModelSerializer):
+    modules = ModuleSerializer(many=True, read_only=True)
+    class Meta:
+        model = EducationPlan
+        fields = ('modules',)
+        read_only_fields = ('modules',)

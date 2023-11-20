@@ -1,5 +1,6 @@
 from djoser.serializers import UserCreateSerializer as BaseUserRegistrationSerializer
 from rest_framework import serializers
+from apps.account.models import Tutor
 
 
 class UserRegistrationSerializer(BaseUserRegistrationSerializer):
@@ -19,3 +20,9 @@ class UserRegistrationSerializer(BaseUserRegistrationSerializer):
             if 'invite_code' not in data:
                 raise serializers.ValidationError("Invite_code are required for student role")
         return data
+
+
+class TutorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tutor
+        fields = '__all__'

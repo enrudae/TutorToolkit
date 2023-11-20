@@ -50,7 +50,7 @@ class Label(models.Model):
 
 class Module(models.Model):
     title = models.CharField(max_length=25)
-    plan = models.ForeignKey(EducationPlan, on_delete=models.CASCADE)
+    plan = models.ForeignKey(EducationPlan, related_name='modules', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
