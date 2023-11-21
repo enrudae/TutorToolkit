@@ -43,6 +43,7 @@ class EducationPlan(models.Model):
 
 class Label(models.Model):
     title = models.CharField(max_length=25)
+    # color = models.CharField(max_length=6, blank=True, null=True)  # Hex Code
 
     def __str__(self):
         return self.title
@@ -64,7 +65,7 @@ class Card(models.Model):
     plan_time = models.DurationField(blank=True, null=True)
     result_time = models.DurationField(blank=True, null=True)
     module = models.ForeignKey(Module, related_name='cards', on_delete=models.CASCADE)
-    labels = models.ManyToManyField(Label, blank=True)
+    labels = models.ManyToManyField(Label, related_name='cards', blank=True)
 
     STATUS_CHOICES = (
         ('not_started', 'NOT_STARTED'),

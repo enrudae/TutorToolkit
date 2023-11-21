@@ -12,21 +12,17 @@ class UserManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
         """Create and save a User with the given email, password and role."""
         email = self.normalize_email(email)
-        role = extra_fields.get('role', '')
-        user = self.model(email=email, role=role)
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def _create_tutor(self, email, password, **extra_fields):
+    def _create_tutor(self, email, password, first_name, last_name, **extra_fields):
         user = self._create_user(email, password, **extra_fields)
-        first_name = extra_fields.get('first_name', '')
-        last_name = extra_fields.get('last_name', '')
         Tutor.objects.create(user=user, first_name=first_name, last_name=last_name)
         return user
 
-    def _create_student(self, email, password, **extra_fields):
-        invite_code = extra_fields.get('invite_code', '')
+    def _create_student(self, email, password, invite_code, **extra_fields):
         invite, error_response, status_code = StudentInvitationService.check_available_invite_code(invite_code)
 
         if not invite:
@@ -44,9 +40,13 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', False)
 
         role = extra_fields.get('role', '')
+        invite_code = extra_fields.pop('invite_code', '')
+        first_name = extra_fields.pop('first_name', '')
+        last_name = extra_fields.pop('last_name', '')
+
         if role == 'tutor':
-            return self._create_tutor(email, password, **extra_fields)
-        return self._create_student(email, password, **extra_fields)
+            return self._create_tutor(email, password, first_name, last_name, **extra_fields)
+        return self._create_student(email, password, invite_code, **extra_fields)
 
     def create_superuser(self, email, password, **extra_fields):
         """Create and save a SuperUser with the given email and password."""

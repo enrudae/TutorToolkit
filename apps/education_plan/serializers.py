@@ -26,6 +26,7 @@ class CardSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'title', 'description', 'date_start', 'date_end', 'plan_time', 'result_time', 'status', 'module',
             'labels')
+        read_only_fields = ('id',)
 
 
 class ModuleSerializer(serializers.ModelSerializer):
@@ -34,6 +35,7 @@ class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Module
         fields = ('id', 'title', 'plan', 'cards')
+        read_only_fields = ('id', 'plan')
 
 
 class ModulesInEducationPlanSerializer(serializers.ModelSerializer):
