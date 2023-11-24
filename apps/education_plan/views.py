@@ -67,19 +67,19 @@ class CardViewSet(mixins.CreateModelMixin,
         queryset = Card.objects.filter(module__plan__tutor__user=user)
         return queryset
 
-#
-# class LabelViewSet(mixins.ListModelMixin,
-#                    mixins.CreateModelMixin,
-#                    mixins.UpdateModelMixin,
-#                    mixins.DestroyModelMixin,
-#                    viewsets.GenericViewSet):
-#     serializer_class = LabelSerializer
-#     permission_classes = (IsTutor,)
-#
-#     def get_queryset(self):
-#         user = self.request.user
-#         queryset = Label.objects.filter()
-#         return queryset
+
+class LabelViewSet(mixins.ListModelMixin,
+                   mixins.CreateModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.DestroyModelMixin,
+                   viewsets.GenericViewSet):
+    serializer_class = LabelSerializer
+    permission_classes = (IsTutor,)
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Label.objects.filter(tutor__user=user)
+        return queryset
 
 
 class AddStudentToEducationPlan(APIView):

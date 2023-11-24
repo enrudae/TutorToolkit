@@ -43,7 +43,8 @@ class EducationPlan(models.Model):
 
 class Label(models.Model):
     title = models.CharField(max_length=25)
-    # color = models.CharField(max_length=6, blank=True, null=True)  # Hex Code
+    color = models.CharField(max_length=6, blank=True, null=True)  # Hex Code
+    tutor = models.ForeignKey(Tutor, related_name='labels', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
@@ -76,4 +77,3 @@ class Card(models.Model):
 
     def __str__(self):
         return self.title
-

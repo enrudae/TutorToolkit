@@ -15,7 +15,6 @@ class StudentInvitationService:
 
         return plan, None, None
 
-
     @staticmethod
     def add_student_to_education_plan(invite_code, student):
         plan, error_response, status_code = StudentInvitationService.check_available_invite_code(invite_code)
