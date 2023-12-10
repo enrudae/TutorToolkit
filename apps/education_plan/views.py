@@ -82,12 +82,10 @@ class LabelViewSet(mixins.ListModelMixin,
         return queryset
 
 
-class AddStudentToEducationPlan(APIView):
+class CheckPossibilityOfAddingByInviteCode(APIView):
     def post(self, request, invite_code):
-        if request.user.role != 'student':
-            return Response({'detail': 'Приглашением может воспользоваться только студент.'},
-                            status=status.HTTP_403_FORBIDDEN)
+        plan, error_response, status_code = StudentInvitationService.check_available_invite_code(invite_code)
+        if error_response:
+            return Response(data=error_response, status=status_code)
 
-        student = request.user.student
-        response = StudentInvitationService.add_student_to_education_plan(invite_code, student)
-        return Response(response)
+        return Response(data={'tutor': f'{plan.tutor.last_name} {plan.tutor.first_name}'}, status=status.HTTP_200_OK)
