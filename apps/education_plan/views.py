@@ -5,9 +5,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from apps.education_plan.models import EducationPlan, Module, Card, Label
 from apps.education_plan.serializers import EducationPlanSerializer, ModuleSerializer, ModulesInEducationPlanSerializer, \
-    CardSerializer, LabelSerializer
+    CardSerializer, LabelSerializer, EducationPlanForStudentSerializer, EducationPlanForTutorSerializer
 from TutorToolkit.permissions import IsTutor, IsTutorCreator
 from apps.education_plan.services import StudentInvitationService
+from apps.account.serializers import ProfileSerializer
 
 
 class EducationPlanViewSet(mixins.ListModelMixin,
@@ -89,3 +90,33 @@ class CheckPossibilityOfAddingByInviteCode(APIView):
             return Response(data=error_response, status=status_code)
 
         return Response(data={'tutor': f'{plan.tutor.last_name} {plan.tutor.first_name}'}, status=status.HTTP_200_OK)
+
+
+class GetUsersData(APIView):
+    def get(self, request):
+
+        user = self.request.user
+        profile_field = user.role
+        profile = getattr(user, profile_field, None)
+
+        if not profile:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        profile_serializer = ProfileSerializer(profile)
+
+        education_plans = EducationPlan.objects.filter(
+            Q(**{f'{profile_field}': profile})
+        ).only('id', 'status', 'discipline', 'student_first_name', 'student_last_name', 'tutor').select_related('tutor')
+
+        if profile_field == 'tutor':
+            education_plans_serializer = EducationPlanForTutorSerializer(education_plans, many=True)
+        else:
+            education_plans_serializer = EducationPlanForStudentSerializer(education_plans, many=True)
+
+        response_data = {
+            **profile_serializer.data,
+            'role': profile_field,
+            'plans': education_plans_serializer.data
+        }
+
+        return Response(response_data)

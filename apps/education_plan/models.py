@@ -8,6 +8,7 @@ class EducationPlan(models.Model):
     tutor = models.ForeignKey(Tutor, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE, blank=True, null=True)
     invite_code = models.CharField(max_length=8, unique=True, db_index=True)
+    discipline = models.CharField(max_length=80, blank=True, null=True)
     student_first_name = models.CharField(max_length=50)
     student_last_name = models.CharField(max_length=50)
 
@@ -31,14 +32,6 @@ class EducationPlan(models.Model):
             code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
             if not cls.objects.filter(invite_code=code).exists():
                 return code
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['tutor', 'student'],
-                name='unique_tutor_student'
-            )
-        ]
 
 
 class Label(models.Model):

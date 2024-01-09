@@ -29,7 +29,8 @@ class UserManager(BaseUserManager):
             raise ValidationError(error_response)
 
         user = self._create_user(email, password, **extra_fields)
-        student = Student.objects.create(user=user)
+        student = Student.objects.create(user=user, first_name=invite.student_first_name,
+                                         last_name=invite.student_last_name)
 
         StudentInvitationService.add_student_to_education_plan(invite_code, student)
         return user
@@ -91,8 +92,9 @@ class Tutor(models.Model):
 
 
 class Student(models.Model):
-
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=50, blank=True, null=True)
+    last_name = models.CharField(max_length=50, blank=True, null=True)
 
-    # def __str__(self):
-    #     return f'{self.last_name} {self.first_name}'
+    def __str__(self):
+        return f'{self.last_name} {self.first_name}'
