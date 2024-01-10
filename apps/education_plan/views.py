@@ -25,7 +25,15 @@ class EducationPlanViewSet(mixins.ListModelMixin,
         ).prefetch_related('modules', 'modules__cards', 'modules__cards__labels')
         return queryset
 
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        email = request.data.get('email')
+        user_status = 'active' if StudentInvitationService.check_email_exists(email) else 'inactive'
+        response.data['user_status'] = user_status
+        return response
+
     def perform_create(self, serializer):
+        #email = serializer.validated_data.get('email')
         user = self.request.user
         tutor = user.tutor
         serializer.save(tutor=tutor)

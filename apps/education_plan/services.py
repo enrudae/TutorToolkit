@@ -1,4 +1,5 @@
 from rest_framework import status
+from django.contrib.auth import get_user_model
 
 
 class StudentInvitationService:
@@ -27,3 +28,8 @@ class StudentInvitationService:
         plan.save()
 
         return {'detail': 'Студент добавлен к учителю.'}, status.HTTP_200_OK
+
+    @staticmethod
+    def check_email_exists(email):
+        User = get_user_model()
+        return User.objects.filter(email=email).exists()
