@@ -35,6 +35,7 @@ INSTALLED_APPS = [
 
     'apps.account.apps.AccountConfig',
     'apps.education_plan.apps.EducationPlanConfig',
+    'apps.schedule.apps.ScheduleConfig',
 ]
 
 MIDDLEWARE = [
@@ -151,7 +152,7 @@ REST_FRAMEWORK = {
 
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
-    'ACTIVATION_URL': '#/activate/{uid}/{token}',
+    'ACTIVATION_URL': 'login/?uid={uid}&token={token}',
     'SEND_ACTIVATION_EMAIL': True,
 
     'SERIALIZERS': {
