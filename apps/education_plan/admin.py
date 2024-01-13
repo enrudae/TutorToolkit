@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from .models import EducationPlan, Module, Card, Label
 
 admin.site.register(EducationPlan)

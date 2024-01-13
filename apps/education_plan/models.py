@@ -8,7 +8,7 @@ class EducationPlan(models.Model):
     tutor = models.ForeignKey(Tutor, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE, blank=True, null=True)
     invite_code = models.CharField(max_length=8, unique=True, db_index=True)
-    discipline = models.CharField(max_length=80, blank=True, null=True)
+    discipline = models.CharField(max_length=80, blank=True)
     student_first_name = models.CharField(max_length=50)
     student_last_name = models.CharField(max_length=50)
 
@@ -36,7 +36,7 @@ class EducationPlan(models.Model):
 
 class Label(models.Model):
     title = models.CharField(max_length=25)
-    color = models.CharField(max_length=6, blank=True, null=True)  # Hex Code
+    color = models.CharField(max_length=6, blank=True)  # Hex Code
     tutor = models.ForeignKey(Tutor, related_name='labels', on_delete=models.CASCADE)
 
     def __str__(self):
@@ -53,7 +53,7 @@ class Module(models.Model):
 
 class Card(models.Model):
     title = models.CharField(max_length=25)
-    description = models.CharField(max_length=255, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True)
     date_start = models.DateTimeField(blank=True, null=True)
     date_end = models.DateTimeField(blank=True, null=True)
     plan_time = models.DurationField(blank=True, null=True)

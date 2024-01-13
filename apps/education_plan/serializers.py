@@ -13,19 +13,13 @@ class EducationPlanSerializer(serializers.ModelSerializer):
 
 
 class EducationPlanForStudentSerializer(serializers.ModelSerializer):
-    first_name = serializers.SerializerMethodField()
-    last_name = serializers.SerializerMethodField()
+    first_name = serializers.CharField(source='tutor.first_name', read_only=True)
+    last_name = serializers.CharField(source='tutor.last_name', read_only=True)
 
     class Meta:
         model = EducationPlan
         fields = ('id', 'status', 'discipline', 'first_name', 'last_name')
-        read_only_fields = ('id', )
-
-    def get_first_name(self, obj):
-        return obj.tutor.first_name if obj.tutor else None
-
-    def get_last_name(self, obj):
-        return obj.tutor.last_name if obj.tutor else None
+        read_only_fields = ('id', 'first_name', 'last_name')
 
 
 class EducationPlanForTutorSerializer(serializers.ModelSerializer):
@@ -35,7 +29,7 @@ class EducationPlanForTutorSerializer(serializers.ModelSerializer):
     class Meta:
         model = EducationPlan
         fields = ('id', 'status', 'discipline', 'first_name', 'last_name')
-        read_only_fields = ('id', )
+        read_only_fields = ('id', 'first_name', 'last_name')
 
 
 class LabelSerializer(serializers.ModelSerializer):

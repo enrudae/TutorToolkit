@@ -41,7 +41,7 @@ class EducationPlanViewSet(mixins.ListModelMixin,
     def get_permissions(self):
         if self.action == 'create':
             return [IsAuthenticated(), IsTutor()]
-        elif self.action in ['update', 'partial_update', 'destroy']:
+        if self.action in ['update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsTutorCreator()]
         return super().get_permissions()
 

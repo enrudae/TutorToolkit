@@ -13,12 +13,10 @@ class UserRegistrationSerializer(BaseUserRegistrationSerializer):
 
     def validate(self, data):
         role = data.get('role')
-        if role == 'tutor':
-            if 'first_name' not in data or 'last_name' not in data:
-                raise serializers.ValidationError("First name and last name are required for tutor role")
-        if role == 'student':
-            if 'invite_code' not in data:
-                raise serializers.ValidationError("Invite_code are required for student role")
+        if role == 'tutor' and ('first_name' not in data or 'last_name' not in data):
+            raise serializers.ValidationError("First name and last name are required for tutor role")
+        if role == 'student' and 'invite_code' not in data:
+            raise serializers.ValidationError("Invite_code are required for student role")
         return data
 
 
