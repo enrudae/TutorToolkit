@@ -1,4 +1,5 @@
 from django.db.models import Q, Prefetch
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import mixins, viewsets, status
 from rest_framework.response import Response
@@ -33,7 +34,6 @@ class EducationPlanViewSet(mixins.ListModelMixin,
         return response
 
     def perform_create(self, serializer):
-        #email = serializer.validated_data.get('email')
         user = self.request.user
         tutor = user.tutor
         serializer.save(tutor=tutor)
@@ -46,7 +46,7 @@ class EducationPlanViewSet(mixins.ListModelMixin,
         return super().get_permissions()
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action in ['list', 'retrieve']:
             return ModulesInEducationPlanSerializer
         return EducationPlanSerializer
 
@@ -63,6 +63,11 @@ class ModuleViewSet(mixins.CreateModelMixin,
         queryset = Module.objects.filter(plan__tutor__user=user)
         return queryset
 
+    def perform_create(self, serializer):
+        plan_id = self.request.data.get('plan_id')
+        education_plan = get_object_or_404(EducationPlan, pk=plan_id)
+        serializer.save(plan=education_plan)
+
 
 class CardViewSet(mixins.CreateModelMixin,
                   mixins.UpdateModelMixin,
@@ -75,6 +80,11 @@ class CardViewSet(mixins.CreateModelMixin,
         user = self.request.user
         queryset = Card.objects.filter(module__plan__tutor__user=user)
         return queryset
+
+    def perform_create(self, serializer):
+        module_id = self.request.data.get('module_id')
+        module = get_object_or_404(Module, pk=module_id)
+        serializer.save(module=module)
 
 
 class LabelViewSet(mixins.ListModelMixin,
@@ -89,6 +99,11 @@ class LabelViewSet(mixins.ListModelMixin,
         user = self.request.user
         queryset = Label.objects.filter(tutor__user=user)
         return queryset
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        tutor = user.tutor
+        serializer.save(tutor=tutor)
 
 
 class CheckPossibilityOfAddingByInviteCode(APIView):

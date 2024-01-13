@@ -4,10 +4,10 @@ from apps.education_plan.views import CheckPossibilityOfAddingByInviteCode, Educ
     CardViewSet, LabelViewSet, GetUsersData
 
 router = routers.DefaultRouter()
-router.register('', EducationPlanViewSet, basename='education_plan')
 router.register('module', ModuleViewSet, basename='module')
 router.register('card', CardViewSet, basename='card')
 router.register('label', LabelViewSet, basename='label')
+router.register('', EducationPlanViewSet, basename='education_plan')
 
 urlpatterns = [
     path('', include(router.urls)),
