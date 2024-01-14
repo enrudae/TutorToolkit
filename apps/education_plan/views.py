@@ -138,7 +138,6 @@ class GetUsersData(APIView):
 
         response_data = {
             **profile_serializer.data,
-            'role': profile_field,
             'plans': education_plans_serializer.data
         }
 

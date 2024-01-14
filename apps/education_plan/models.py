@@ -1,6 +1,7 @@
 import random
 import string
 from django.db import models
+from django.core.validators import RegexValidator
 from apps.account.models import Tutor, Student
 
 
@@ -36,8 +37,15 @@ class EducationPlan(models.Model):
 
 class Label(models.Model):
     title = models.CharField(max_length=25)
-    color = models.CharField(max_length=6, blank=True)  # Hex Code
     tutor = models.ForeignKey(Tutor, related_name='labels', on_delete=models.CASCADE)
+    color = models.CharField(
+        max_length=7,
+        default='#FFFFFF',
+        validators=[
+            RegexValidator(regex='^#[0-9A-Fa-f]{6}$',
+                           message='Hex color must be a valid code starting with a hashtag and exactly 6 characters.'),
+        ],
+    )
 
     def __str__(self):
         return self.title

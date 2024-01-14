@@ -12,5 +12,5 @@ router.register('', EducationPlanViewSet, basename='education_plan')
 urlpatterns = [
     path('', include(router.urls)),
     path('invite/<str:invite_code>/', CheckPossibilityOfAddingByInviteCode.as_view()),
-    path('get_users_data', GetUsersData.as_view()),
+    path('get_users_data', GetUsersData.as_view(), name='get_users_data'),
 ]
