@@ -30,6 +30,7 @@ INSTALLED_APPS = [
 
     'corsheaders',
     'rest_framework',
+    'django_celery_beat',
     'djoser',
     'drf_yasg',
 
@@ -202,6 +203,13 @@ EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
 EMAIL_ADMIN = EMAIL_HOST_USER
+
+
+CELERY_TIMEZONE = os.environ.get('CELERY_TIMEZONE')
+CELERY_TASK_TRACK_STARTED = os.environ.get('CELERY_TASK_TRACK_STARTED')
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
+CELERY_IMPORTS = ['apps.notifications.tasks']
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 
 # LOGGING = {
