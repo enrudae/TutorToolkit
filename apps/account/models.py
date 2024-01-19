@@ -85,7 +85,7 @@ class Tutor(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    telegram_id = models.IntegerField(null=True)
+    telegram_id = models.IntegerField(blank=True, null=True)
     device_id = models.CharField(blank=True)
     receive_email_notifications = models.BooleanField(default=True)
 
@@ -97,7 +97,7 @@ class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=50, blank=True)
     last_name = models.CharField(max_length=50, blank=True)
-    telegram_id = models.IntegerField(null=True)
+    telegram_id = models.IntegerField(blank=True, null=True)
     device_id = models.CharField(blank=True)
     receive_email_notifications = models.BooleanField(default=True)
 

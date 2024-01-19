@@ -1,7 +1,7 @@
 from django.urls import path
 from djoser.views import UserViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
-from apps.account.views import CustomUserViewSet
+from apps.account.views import CustomUserViewSet, SetTelegramID
 
 urlpatterns = [
     path('register/', CustomUserViewSet.as_view({'post': 'create'}), name="register"),
@@ -12,4 +12,6 @@ urlpatterns = [
     path('reset_password/', UserViewSet.as_view({'post': 'reset_password'}), name='user-reset_password'),
     path('reset_password_confirm/', UserViewSet.as_view({'post': 'reset_password_confirm'}),
          name='reset_password_confirm'),
+
+    path('set-telegram-id/', SetTelegramID.as_view(), name='set-telegram-id'),
 ]

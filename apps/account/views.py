@@ -1,7 +1,9 @@
 from djoser.views import UserViewSet
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
+from apps.account.models import Student
 
 
 class CustomUserViewSet(UserViewSet):
@@ -9,3 +11,30 @@ class CustomUserViewSet(UserViewSet):
     def create(self, request, *args, **kwargs):
         super().create(request, *args, **kwargs)
         return Response(status=status.HTTP_201_CREATED)
+
+
+class SetTelegramID(APIView):
+    def post(self, request, *args, **kwargs):
+        from apps.education_plan.models import EducationPlan
+        code = request.data.get('code')
+        telegram_id = request.data.get('telegram_id')
+
+        try:
+            plan = EducationPlan.objects.get(invite_code=code)
+            student = plan.student
+
+            if student.telegram_id:
+                return Response({'message': 'Профиль уже привязан к телеграм аккаунту'},
+                                status=status.HTTP_403_FORBIDDEN)
+
+            if Student.objects.filter(telegram_id=telegram_id).exists():
+                return Response({'message': 'Этот телеграм аккаунт уже привязан к профилю'},
+                                status=status.HTTP_403_FORBIDDEN)
+
+            student.telegram_id = telegram_id
+            student.save()
+
+            return Response({'message': 'Telegram ID успешно сохранен'}, status=status.HTTP_200_OK)
+
+        except EducationPlan.DoesNotExist:
+            return Response({'message': 'Профиль с указанным кодом не найден'}, status=status.HTTP_404_NOT_FOUND)
