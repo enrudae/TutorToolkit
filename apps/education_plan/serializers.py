@@ -25,11 +25,12 @@ class EducationPlanForStudentSerializer(serializers.ModelSerializer):
 class EducationPlanForTutorSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source='student_first_name', read_only=True)
     last_name = serializers.CharField(source='student_last_name', read_only=True)
+    email = serializers.EmailField(source='student.user.email', read_only=True)
 
     class Meta:
         model = EducationPlan
-        fields = ('id', 'status', 'discipline', 'first_name', 'last_name')
-        read_only_fields = ('id', 'first_name', 'last_name')
+        fields = ('id', 'status', 'discipline', 'first_name', 'last_name', 'email')
+        read_only_fields = ('id', 'first_name', 'last_name', 'email')
 
 
 class LabelSerializer(serializers.ModelSerializer):

@@ -5,7 +5,8 @@ from django.contrib.auth import get_user_model
 
 from apps.account.serializers import ProfileSerializer
 from apps.education_plan.models import Label, EducationPlan
-from apps.education_plan.serializers import LabelSerializer, EducationPlanForStudentSerializer
+from apps.education_plan.serializers import LabelSerializer, EducationPlanForStudentSerializer, \
+    EducationPlanForTutorSerializer
 
 User = get_user_model()
 
@@ -117,8 +118,8 @@ class GetUsersDataAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         tutor_serialized_data = ProfileSerializer(self.tutor).data
-        plans_serialized_data = EducationPlanForStudentSerializer([self.education_plan_1, self.education_plan_2],
-                                                                  many=True).data
+        plans_serialized_data = EducationPlanForTutorSerializer([self.education_plan_1, self.education_plan_2],
+                                                                many=True).data
 
         expected_data = {
             **tutor_serialized_data,
