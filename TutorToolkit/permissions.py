@@ -8,4 +8,8 @@ class IsTutor(permissions.BasePermission):
 
 class IsTutorCreator(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        return request.user.is_authenticated and request.user.role == 'tutor' and obj.tutor.user == request.user
+        if request.user.is_authenticated and request.user.role == 'tutor':
+            if hasattr(obj, 'tutor'):
+                return obj.tutor.user == request.user
+            return obj.education_plan.tutor.user == request.user
+        return False

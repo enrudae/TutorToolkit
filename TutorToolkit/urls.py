@@ -9,6 +9,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/account/', include('apps.account.urls')),
     path('api/education_plan/', include('apps.education_plan.urls')),
+    path('api/schedule/', include('apps.schedule.urls')),
 ] + doc_urls
 
 if settings.DEBUG:
