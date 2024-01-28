@@ -1,11 +1,13 @@
 import random
 import string
+import uuid
 from django.db import models
 from django.core.validators import RegexValidator
 from apps.account.models import Tutor, Student
 
 
 class EducationPlan(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tutor = models.ForeignKey(Tutor, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE, blank=True, null=True)
     invite_code = models.CharField(max_length=8, unique=True, db_index=True)
@@ -36,6 +38,7 @@ class EducationPlan(models.Model):
 
 
 class Label(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=25)
     tutor = models.ForeignKey(Tutor, related_name='labels', on_delete=models.CASCADE)
     color = models.CharField(
@@ -52,6 +55,7 @@ class Label(models.Model):
 
 
 class Module(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=25)
     plan = models.ForeignKey(EducationPlan, related_name='modules', on_delete=models.CASCADE)
 
@@ -60,6 +64,7 @@ class Module(models.Model):
 
 
 class Card(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=25)
     description = models.CharField(max_length=255, blank=True)
     date_start = models.DateTimeField(blank=True, null=True)

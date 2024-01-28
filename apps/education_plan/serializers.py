@@ -51,11 +51,6 @@ class CardSerializer(serializers.ModelSerializer):
             'labels', 'module_id')
         read_only_fields = ('id', 'module')
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['id'] = str(instance.id)
-        return data
-
 
 class ModuleSerializer(serializers.ModelSerializer):
     cards = CardSerializer(many=True, read_only=True)
@@ -65,11 +60,6 @@ class ModuleSerializer(serializers.ModelSerializer):
         model = Module
         fields = ('id', 'title', 'plan', 'cards', 'plan_id')
         read_only_fields = ('id', 'plan')
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['id'] = str(instance.id)
-        return data
 
 
 class ModulesInEducationPlanSerializer(serializers.ModelSerializer):
