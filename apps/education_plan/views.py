@@ -116,6 +116,8 @@ class CheckPossibilityOfAddingByInviteCode(APIView):
 
 
 class GetUsersData(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
 
         user = self.request.user
@@ -142,3 +144,23 @@ class GetUsersData(APIView):
         }
 
         return Response(response_data)
+
+
+class AddStudentToTeacherByInviteCode(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, invite_code):
+        user = self.request.user
+        if user.role != 'student':
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        _, error_response, status_code = StudentInvitationService.check_available_invite_code(invite_code)
+        if error_response:
+            return Response(data=error_response, status=status_code)
+
+        StudentInvitationService.add_student_to_education_plan(invite_code, user.student)
+
+        return Response(status=status.HTTP_201_CREATED)
+
+
+
