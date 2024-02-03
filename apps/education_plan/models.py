@@ -43,7 +43,7 @@ class Label(models.Model):
     tutor = models.ForeignKey(Tutor, related_name='labels', on_delete=models.CASCADE)
     color = models.CharField(
         max_length=7,
-        default='#FFFFFF',
+        default='#FF1493',
         validators=[
             RegexValidator(regex='^#[0-9A-Fa-f]{6}$',
                            message='Hex color must be a valid code starting with a hashtag and exactly 6 characters.'),
@@ -78,8 +78,17 @@ class Card(models.Model):
         ('not_started', 'NOT_STARTED'),
         ('in_progress', 'IN_PROGRESS'),
         ('done', 'DONE'),
+        ('to_repeat', 'TO_REPEAT'),
     )
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='not_started')
+
+    DIFFICULTY_CHOICES = (
+        ('not_selected', 'NOT_SELECTED'),
+        ('easy', 'EASY'),
+        ('medium', 'MEDIUM'),
+        ('hard', 'HARD'),
+    )
+    difficulty = models.CharField(max_length=15, choices=DIFFICULTY_CHOICES, default='not_selected')
 
     def __str__(self):
         return self.title

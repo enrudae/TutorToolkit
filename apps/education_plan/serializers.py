@@ -41,8 +41,8 @@ class LabelSerializer(serializers.ModelSerializer):
 
 
 class CardSerializer(serializers.ModelSerializer):
-    labels = LabelSerializer(many=True, read_only=True)
-    module_id = serializers.IntegerField(write_only=True)
+    module_id = serializers.CharField(write_only=True)
+    labels = serializers.PrimaryKeyRelatedField(queryset=Label.objects.all(), many=True, write_only=True)
 
     class Meta:
         model = Card
@@ -50,6 +50,11 @@ class CardSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'date_start', 'date_end', 'plan_time', 'result_time', 'status', 'module',
             'labels', 'module_id')
         read_only_fields = ('id', 'module')
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['labels'] = LabelSerializer(instance.labels.all(), many=True).data
+        return representation
 
 
 class ModuleSerializer(serializers.ModelSerializer):
