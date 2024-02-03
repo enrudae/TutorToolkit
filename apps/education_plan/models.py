@@ -50,6 +50,16 @@ class Label(models.Model):
         ],
     )
 
+    class Meta:
+        verbose_name = "Метка"
+        verbose_name_plural = "Метки"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'tutor'],
+                name='unique_label_title_tutor'
+            )
+        ]
+
     def __str__(self):
         return self.title
 
