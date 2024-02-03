@@ -106,13 +106,19 @@ class LabelViewSet(mixins.ListModelMixin,
         serializer.save(tutor=tutor)
 
 
-class CheckPossibilityOfAddingByInviteCode(APIView):
-    def post(self, request, invite_code):
+class GetInviteInfoByCode(APIView):
+    def get(self, request, invite_code):
         plan, error_response, status_code = StudentInvitationService.check_available_invite_code(invite_code)
         if error_response:
             return Response(data=error_response, status=status_code)
 
-        return Response(data={'tutor': f'{plan.tutor.last_name} {plan.tutor.first_name}'}, status=status.HTTP_200_OK)
+        data = {
+            'first_name': plan.tutor.first_name,
+            'last_name': plan.tutor.last_name,
+            'discipline': plan.discipline,
+        }
+
+        return Response(data=data, status=status.HTTP_200_OK)
 
 
 class GetUsersData(APIView):

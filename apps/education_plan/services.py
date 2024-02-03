@@ -12,7 +12,7 @@ class StudentInvitationService:
             return None, {'detail': 'Приглашение с данным кодом не найдено.'}, status.HTTP_404_NOT_FOUND
 
         if plan.student:
-            return None, {'detail': 'Приглашение использовано другим студентом.'}, status.HTTP_400_BAD_REQUEST
+            return None, {'detail': 'Приглашение использовано другим студентом.'}, status.HTTP_403_FORBIDDEN
 
         return plan, None, None
 
