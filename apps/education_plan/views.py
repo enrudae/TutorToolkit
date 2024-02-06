@@ -1,4 +1,4 @@
-from django.db.models import Q, Prefetch
+from django.db.models import Q, F, Prefetch
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import mixins, viewsets, status
@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from apps.education_plan.models import EducationPlan, Module, Card, Label
 from apps.education_plan.serializers import EducationPlanSerializer, ModuleSerializer, ModulesInEducationPlanSerializer, \
-    CardSerializer, LabelSerializer, EducationPlanForStudentSerializer, EducationPlanForTutorSerializer
+    CardSerializer, LabelSerializer, EducationPlanForStudentSerializer, EducationPlanForTutorSerializer, \
+    MoveElementSerializer
 from TutorToolkit.permissions import IsTutor, IsTutorCreator
 from apps.education_plan.services import StudentInvitationService
 from apps.account.serializers import ProfileSerializer
@@ -168,5 +169,50 @@ class AddStudentToTeacherByInviteCode(APIView):
 
         return Response(status=status.HTTP_201_CREATED)
 
+
+def move_card(card, destination_index, destination_module):
+    source_module = card.module
+    source_index = card.index
+    cards_in_source = source_module.cards
+    cards_in_destination = destination_module.cards.all()
+    destination_index = min(destination_index, len(cards_in_destination))
+
+    cards_to_move = cards_in_source.filter(index__gt=source_index)
+    if cards_to_move:
+        cards_to_move.update(index=F('index') - 1)
+
+    cards_to_move = cards_in_destination.filter(index__gte=destination_index)
+    if cards_to_move:
+        cards_to_move.update(index=F('index') + 1)
+
+    card.index = destination_index
+    card.module = destination_module
+    card.save()
+
+
+class ChangeOrderOfElements(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = self.request.user
+        if user.role == 'student':
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        serializer = MoveElementSerializer(data=request.data)
+        if serializer.is_valid():
+            validated_data = serializer.validated_data
+            element_type = validated_data.get('element_type')
+            element_id = validated_data.get('element_id')
+            destination_index = validated_data.get('destination_index')
+            destination_id = validated_data.get('destination_id', None)
+
+            card = get_object_or_404(Card, id=element_id, module__plan__tutor=user.tutor)
+            destination_module = get_object_or_404(Module, id=destination_id, plan__tutor=user.tutor)
+            move_card(card, destination_index, destination_module)
+
+            serializer = ModulesInEducationPlanSerializer(destination_module.plan)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

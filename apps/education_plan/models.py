@@ -83,6 +83,7 @@ class Card(models.Model):
     result_time = models.DurationField(blank=True, null=True)
     module = models.ForeignKey(Module, related_name='cards', on_delete=models.CASCADE)
     labels = models.ManyToManyField(Label, related_name='cards', blank=True)
+    index = models.IntegerField()
 
     STATUS_CHOICES = (
         ('not_started', 'NOT_STARTED'),
@@ -99,6 +100,18 @@ class Card(models.Model):
         ('hard', 'HARD'),
     )
     difficulty = models.CharField(max_length=15, choices=DIFFICULTY_CHOICES, default='not_selected')
+
+    def save(self, *args, **kwargs):
+        # Если поле index не установлено, установите его
+        if not self.index:
+            self.index = self.module.cards.count()
+        super().save(*args, **kwargs)
+
+
+    # def perform_create(self, serializer):
+    #     instance = serializer.save()
+    #     instance.index = instance.module.cards.count()
+    #     instance.save()
 
     def __str__(self):
         return self.title

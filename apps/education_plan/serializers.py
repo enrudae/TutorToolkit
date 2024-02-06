@@ -48,8 +48,8 @@ class CardSerializer(serializers.ModelSerializer):
         model = Card
         fields = (
             'id', 'title', 'description', 'date_start', 'date_end', 'plan_time', 'result_time', 'status', 'module',
-            'labels', 'module_id')
-        read_only_fields = ('id', 'module')
+            'labels', 'module_id', 'index')
+        read_only_fields = ('id', 'module', 'index')
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -59,7 +59,7 @@ class CardSerializer(serializers.ModelSerializer):
 
 class ModuleSerializer(serializers.ModelSerializer):
     cards = CardSerializer(many=True, read_only=True)
-    plan_id = serializers.IntegerField(write_only=True)
+    plan_id = serializers.CharField(write_only=True)
 
     class Meta:
         model = Module
@@ -74,3 +74,21 @@ class ModulesInEducationPlanSerializer(serializers.ModelSerializer):
         model = EducationPlan
         fields = ('id', 'discipline', 'modules',)
         read_only_fields = ('modules',)
+
+
+class MoveElementSerializer(serializers.Serializer):
+    ELEMENT_TYPES = ('task', 'board')
+
+    element_type = serializers.ChoiceField(choices=ELEMENT_TYPES)
+    element_id = serializers.CharField()
+    destination_index = serializers.IntegerField()
+    destination_id = serializers.CharField(required=False)
+
+    def validate(self, data):
+        element_type = data.get('element_type')
+        destination_id = data.get('destination_id')
+
+        if element_type == 'task' and destination_id is None:
+            raise serializers.ValidationError("Field 'destination_id' is required for task.")
+
+        return data

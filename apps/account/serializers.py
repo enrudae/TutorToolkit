@@ -27,7 +27,7 @@ class TutorSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
+    id = serializers.CharField()
     first_name = serializers.CharField(max_length=50)
     last_name = serializers.CharField(max_length=50)
     role = serializers.CharField(source='user.role', read_only=True)
