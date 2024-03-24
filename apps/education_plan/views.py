@@ -215,4 +215,8 @@ class ChangeOrderOfElements(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+class test_send(APIView):
+    def get(self, request):
+        from apps.notifications.tasks import send_notification
+        id = send_notification.delay(request.user.id, 'тест').id
+        return Response(data={'id': id}, status=status.HTTP_200_OK)

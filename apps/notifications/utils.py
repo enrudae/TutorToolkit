@@ -38,6 +38,7 @@ def send_notification_according_to_profile_settings(profile, message):
 
 
 def delete_notification(notification_id):
-    result = AsyncResult(notification_id)
-    if not result.ready():
-        result.revoke(terminate=True)
+    pass
+    # result = AsyncResult(notification_id)
+    # if not result.ready():
+    #     result.revoke(terminate=True)

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'apps.account.apps.AccountConfig',
     'apps.education_plan.apps.EducationPlanConfig',
     'apps.schedule.apps.ScheduleConfig',
+    'apps.notifications.apps.NotificationsConfig',
 ]
 
 MIDDLEWARE = [

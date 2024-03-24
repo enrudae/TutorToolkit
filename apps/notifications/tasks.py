@@ -20,4 +20,4 @@ def send_lesson_notifications(lesson_id, message):
     tutor = lesson.education_plan.tutor
 
     send_notification_according_to_profile_settings(student, message)
-    send_notification_according_to_profile_settings(tutor, message)
+    #send_notification_according_to_profile_settings(tutor, message)

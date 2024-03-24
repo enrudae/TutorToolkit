@@ -10,6 +10,7 @@ urlpatterns = [
     path('api/account/', include('apps.account.urls')),
     path('api/education_plan/', include('apps.education_plan.urls')),
     path('api/schedule/', include('apps.schedule.urls')),
+    path('api/notifications/', include('apps.notifications.urls')),
 ] + doc_urls
 
 if settings.DEBUG:
