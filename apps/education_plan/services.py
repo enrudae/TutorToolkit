@@ -1,4 +1,5 @@
 from rest_framework import status
+from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 
 
@@ -33,3 +34,8 @@ class StudentInvitationService:
     def check_email_exists(email):
         User = get_user_model()
         return User.objects.filter(email=email).exists()
+
+    @staticmethod
+    def get_user_by_email(email):
+        User = get_user_model()
+        return get_object_or_404(User, email=email)
