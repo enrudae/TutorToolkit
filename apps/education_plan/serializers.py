@@ -1,10 +1,10 @@
 from rest_framework import serializers
 from apps.education_plan.models import EducationPlan, Module, Card, Label
-from apps.account.serializers import TutorSerializer
+from apps.account.serializers import ProfileSerializer
 
 
 class EducationPlanSerializer(serializers.ModelSerializer):
-    tutor = TutorSerializer(read_only=True)
+    tutor = ProfileSerializer(read_only=True)
 
     class Meta:
         model = EducationPlan

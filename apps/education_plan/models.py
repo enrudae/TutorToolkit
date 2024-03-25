@@ -3,13 +3,14 @@ import string
 import uuid
 from django.db import models
 from django.core.validators import RegexValidator
-from apps.account.models import Tutor, Student
+from django.core.exceptions import ValidationError
+from apps.account.models import UserProfile
 
 
 class EducationPlan(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    tutor = models.ForeignKey(Tutor, on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, blank=True, null=True)
+    tutor = models.ForeignKey(UserProfile, related_name='tutor_plans', on_delete=models.CASCADE)
+    student = models.ForeignKey(UserProfile, related_name='student_plans', on_delete=models.CASCADE, blank=True, null=True)
     invite_code = models.CharField(max_length=8, unique=True, db_index=True)
     discipline = models.CharField(max_length=80, blank=True)
     student_first_name = models.CharField(max_length=50)
@@ -40,7 +41,7 @@ class EducationPlan(models.Model):
 class Label(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=25)
-    tutor = models.ForeignKey(Tutor, related_name='labels', on_delete=models.CASCADE)
+    tutor = models.ForeignKey(UserProfile, related_name='labels', on_delete=models.CASCADE)
     color = models.CharField(
         max_length=7,
         default='#FF1493',
@@ -106,7 +107,6 @@ class Card(models.Model):
         if not self.index:
             self.index = self.module.cards.count()
         super().save(*args, **kwargs)
-
 
     # def perform_create(self, serializer):
     #     instance = serializer.save()

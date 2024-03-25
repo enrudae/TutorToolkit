@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
-from apps.account.models import Student
+from apps.account.models import UserProfile
 
 
 class CustomUserViewSet(UserViewSet):
@@ -27,7 +27,7 @@ class SetTelegramID(APIView):
                 return Response({'message': 'Профиль уже привязан к телеграм аккаунту'},
                                 status=status.HTTP_403_FORBIDDEN)
 
-            if Student.objects.filter(telegram_id=telegram_id).exists():
+            if UserProfile.objects.filter(telegram_id=telegram_id).exists():
                 return Response({'message': 'Этот телеграм аккаунт уже привязан к профилю'},
                                 status=status.HTTP_403_FORBIDDEN)
 

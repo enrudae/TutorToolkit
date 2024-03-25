@@ -14,11 +14,11 @@ User = get_user_model()
 class LabelAPITestCase(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(email='testuser@gmail.com', password='testpassword', role='tutor')
-        self.tutor = self.user.tutor
+        self.tutor = self.user.userprofile
 
         self.another_user = User.objects.create_user(email='another_user2@gmail.com', password='testpassword',
                                                      role='tutor')
-        self.another_tutor = self.another_user.tutor
+        self.another_tutor = self.another_user.userprofile
 
         self.label = Label.objects.create(title='Test Label', color='#FF0000', tutor=self.tutor)
         self.label2 = Label.objects.create(title='Test Label2', color='#FF0000', tutor=self.tutor)
@@ -47,7 +47,7 @@ class LabelAPITestCase(APITestCase):
 
     def test_update_label(self):
         self.client.force_authenticate(user=self.user)
-        label = Label.objects.create(title='Label', color='#00FF00', tutor=self.user.tutor)
+        label = Label.objects.create(title='Label', color='#00FF00', tutor=self.user.userprofile)
 
         update_data = {'title': 'Updated Label', 'color': '#1111FF'}
         response = self.client.patch(reverse('label-detail', kwargs={'pk': label.id}), update_data)
@@ -93,7 +93,7 @@ class GetUsersDataAPITestCase(APITestCase):
         self.url = reverse('get_users_data')
         self.user_tutor = User.objects.create_user(email='testuser@gmail.com', password='testpassword',
                                                    role='tutor', first_name='first_name', last_name='last_name')
-        self.tutor = self.user_tutor.tutor
+        self.tutor = self.user_tutor.userprofile
 
         self.education_plan_1 = EducationPlan.objects.create(tutor=self.tutor, discipline='Математика',
                                                              student_first_name='first_name',
@@ -106,7 +106,7 @@ class GetUsersDataAPITestCase(APITestCase):
 
         self.user_student = User.objects.create_user(email='student@gmail.com', password='testpassword', role='student',
                                                      invite_code=self.education_plan_1.invite_code)
-        self.student = self.user_student.student
+        self.student = self.user_student.userprofile
         self.education_plan_1.student = self.student
         self.education_plan_2.student = self.student
         self.education_plan_1.save()

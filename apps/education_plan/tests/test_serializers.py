@@ -9,7 +9,7 @@ User = get_user_model()
 class LabelSerializerTestCase(TestCase):
     def test_label_serializer(self):
         self.user = User.objects.create_user(email='testuser@gmail.com', password='testpassword', role='tutor')
-        self.tutor = self.user.tutor
+        self.tutor = self.user.userprofile
         label_1 = Label.objects.create(title='Test Label 1', color='#FF0000', tutor=self.tutor)
         label_2 = Label.objects.create(title='Test Label 2', color='#FFFFFF', tutor=self.tutor)
         serialized_data = LabelSerializer([label_1, label_2], many=True).data

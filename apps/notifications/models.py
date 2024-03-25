@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from apps.education_plan.models import EducationPlan
-# from apps.account.models import
+from apps.account.models import UserProfile
 
 
 class Notification(models.Model):
@@ -18,4 +18,4 @@ class Notification(models.Model):
     notification_task_id = models.CharField(blank=True)
     type = models.CharField(max_length=15, choices=TYPE_CHOICES, default='not_started')
     education_plan = models.ForeignKey(EducationPlan, on_delete=models.CASCADE)
-    # recipient = models.ForeignKey(, on_delete=models.CASCADE)
+    recipient = models.ForeignKey(UserProfile, on_delete=models.CASCADE)

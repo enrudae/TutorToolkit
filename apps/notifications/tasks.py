@@ -9,7 +9,7 @@ User = get_user_model()
 @shared_task
 def send_notification(user_id, message):
     user = User.objects.get(id=user_id)
-    profile = user.tutor if user.role == 'tutor' else user.student
+    profile = user.userprofile
     send_notification_according_to_profile_settings(profile, message)
 
 

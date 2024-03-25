@@ -17,15 +17,5 @@ class NotificationViewSet(mixins.ListModelMixin,
 
     def get_queryset(self):
         user = self.request.user
-        profile_field = user.role
-        profile = getattr(user, profile_field, None)
-
-        if not profile:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        education_plans = EducationPlan.objects.filter(
-            Q(**{f'{profile_field}': profile})
-        ).only('id', 'status', 'discipline', 'student_first_name', 'student_last_name', 'tutor').select_related('tutor')
-
-        queryset = Notification.objects.filter(education_plan__in=education_plans)
+        queryset = Notification.objects.filter(recipient=user.userprofile)
         return queryset

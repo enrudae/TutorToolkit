@@ -16,7 +16,7 @@ class LessonSerializerForTutorSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         plan_id = validated_data.pop('plan_id')
-        plan = EducationPlan.objects.filter(id=plan_id, tutor=self.context['request'].user.tutor).first()
+        plan = EducationPlan.objects.filter(id=plan_id, tutor=self.context['request'].user.userprofile).first()
 
         if not plan:
             raise serializers.ValidationError("Образовательный план не найден или не принадлежит вам.")

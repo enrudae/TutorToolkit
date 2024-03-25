@@ -19,13 +19,13 @@ class LessonViewSet(mixins.ListModelMixin,
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Lesson.objects.filter(
-            Q(education_plan__tutor=user.tutor) if user.role == 'tutor' else Q(education_plan__student=user.student)
-        )
+        profile = user.userprofile
+        profile_field = profile.role
+        queryset = Lesson.objects.filter(Q(**{f'{profile_field}': profile}))
         return queryset
 
     def get_serializer_class(self):
-        if self.request.user.role == 'tutor':
+        if self.request.user.userprofile.role == 'tutor':
             return LessonSerializerForTutorSerializer
         return LessonSerializerForStudentSerializer
 

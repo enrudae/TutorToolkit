@@ -8,7 +8,7 @@ from apps.education_plan.models import EducationPlan, Module, Card, Label
 from apps.education_plan.serializers import EducationPlanSerializer, ModuleSerializer, ModulesInEducationPlanSerializer, \
     CardSerializer, LabelSerializer, EducationPlanForStudentSerializer, EducationPlanForTutorSerializer, \
     MoveElementSerializer
-from TutorToolkit.permissions import IsTutor, IsTutorCreator
+from TutorToolkit.permissions import IsTutor, IsStudent, IsTutorCreator
 from apps.education_plan.services import StudentInvitationService
 from apps.account.serializers import ProfileSerializer
 
@@ -22,8 +22,10 @@ class EducationPlanViewSet(mixins.ListModelMixin,
 
     def get_queryset(self):
         user = self.request.user
+        profile = user.userprofile
+        profile_field = profile.role
         queryset = EducationPlan.objects.filter(
-            Q(tutor=user.tutor) if user.role == 'tutor' else Q(student=user.student)
+            Q(**{f'{profile_field}': profile})
         ).prefetch_related('modules', 'modules__cards', 'modules__cards__labels')
         return queryset
 
@@ -36,8 +38,7 @@ class EducationPlanViewSet(mixins.ListModelMixin,
 
     def perform_create(self, serializer):
         user = self.request.user
-        tutor = user.tutor
-        serializer.save(tutor=tutor)
+        serializer.save(tutor=user.userprofile)
 
     def get_permissions(self):
         if self.action == 'create':
@@ -103,8 +104,7 @@ class LabelViewSet(mixins.ListModelMixin,
 
     def perform_create(self, serializer):
         user = self.request.user
-        tutor = user.tutor
-        serializer.save(tutor=tutor)
+        serializer.save(tutor=user.userprofile)
 
 
 class GetInviteInfoByCode(APIView):
@@ -126,19 +126,18 @@ class GetUsersData(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
         user = self.request.user
-        profile_field = user.role
-        profile = getattr(user, profile_field, None)
+        profile = user.userprofile
+        profile_field = profile.role
 
         if not profile:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         profile_serializer = ProfileSerializer(profile)
 
-        education_plans = EducationPlan.objects.filter(
-            Q(**{f'{profile_field}': profile})
-        ).only('id', 'status', 'discipline', 'student_first_name', 'student_last_name', 'tutor').select_related('tutor')
+        education_plans = EducationPlan.objects.filter(Q(**{f'{profile_field}': profile})
+                                                       ).only('id', 'status', 'discipline', 'student_first_name',
+                                                              'student_last_name', 'tutor').select_related('tutor')
 
         if profile_field == 'tutor':
             education_plans_serializer = EducationPlanForTutorSerializer(education_plans, many=True)
@@ -154,18 +153,19 @@ class GetUsersData(APIView):
 
 
 class AddStudentToTeacherByInviteCode(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStudent]
 
     def post(self, request, invite_code):
         user = self.request.user
-        if user.role != 'student':
+        profile = user.userprofile
+        if profile.role != 'student':
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         _, error_response, status_code = StudentInvitationService.check_available_invite_code(invite_code)
         if error_response:
             return Response(data=error_response, status=status_code)
 
-        StudentInvitationService.add_student_to_education_plan(invite_code, user.student)
+        StudentInvitationService.add_student_to_education_plan(invite_code, profile)
 
         return Response(status=status.HTTP_201_CREATED)
 
@@ -191,12 +191,14 @@ def move_card(card, destination_index, destination_module):
 
 
 class ChangeOrderOfElements(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTutor]
 
     def post(self, request):
         user = self.request.user
-        if user.role == 'student':
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        profile = user.userprofile
+
+        # if profile.role != 'tutor':
+        #     return Response(status=status.HTTP_403_FORBIDDEN)
 
         serializer = MoveElementSerializer(data=request.data)
         if serializer.is_valid():
@@ -206,14 +208,15 @@ class ChangeOrderOfElements(APIView):
             destination_index = validated_data.get('destination_index')
             destination_id = validated_data.get('destination_id', None)
 
-            card = get_object_or_404(Card, id=element_id, module__plan__tutor=user.tutor)
-            destination_module = get_object_or_404(Module, id=destination_id, plan__tutor=user.tutor)
+            card = get_object_or_404(Card, id=element_id, module__plan__tutor=profile)
+            destination_module = get_object_or_404(Module, id=destination_id, plan__tutor=profile)
             move_card(card, destination_index, destination_module)
 
             serializer = ModulesInEducationPlanSerializer(destination_module.plan)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class test_send(APIView):
     def get(self, request):
