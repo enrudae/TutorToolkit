@@ -7,7 +7,7 @@ class LessonSerializerForTutorSerializer(serializers.ModelSerializer):
     discipline = serializers.CharField(source='education_plan.discipline', read_only=True)
     first_name = serializers.CharField(source='education_plan.student_first_name', read_only=True)
     last_name = serializers.CharField(source='education_plan.student_last_name', read_only=True)
-    plan_id = serializers.IntegerField(write_only=True)
+    plan_id = serializers.CharField(write_only=True)
 
     class Meta:
         model = Lesson

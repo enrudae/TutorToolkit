@@ -37,8 +37,11 @@ def send_notification_according_to_profile_settings(profile, message):
         send_telegram_notification(profile.telegram_id, message)
 
 
-def delete_notification(notification_id):
-    pass
+# def delete_notification(task_id):
+#     task = AsyncResult(task_id)
+#     task.revoke(terminate=True)
+#     revoke(task_id, terminate=True)
+#     # celery.control.revoke(task_id, terminate=True)
     # result = AsyncResult(notification_id)
     # if not result.ready():
     #     result.revoke(terminate=True)

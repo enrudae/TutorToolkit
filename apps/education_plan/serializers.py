@@ -48,7 +48,7 @@ class CardSerializer(serializers.ModelSerializer):
         model = Card
         fields = (
             'id', 'title', 'description', 'date_start', 'date_end', 'plan_time', 'result_time', 'status', 'module',
-            'labels', 'module_id', 'index')
+            'labels', 'module_id', 'index', 'difficulty')
         read_only_fields = ('id', 'module', 'index')
 
     def to_representation(self, instance):

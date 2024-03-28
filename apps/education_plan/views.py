@@ -42,7 +42,7 @@ class EducationPlanViewSet(mixins.ListModelMixin,
         plan = serializer.save(tutor=user.userprofile)
         email = serializer.context['request'].data.get('email')
         if StudentInvitationService.check_email_exists(email):
-            Notification.create_invite_notification(plan, email)
+            Notification.create_notification(plan, 'invite', email=email)
 
     def get_permissions(self):
         if self.action == 'create':
