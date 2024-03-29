@@ -68,9 +68,7 @@ class Notification(models.Model):
 
     @staticmethod
     def cancel_lesson_notification(lesson):
-        print(lesson)
-        notification_for_cancelled = get_object_or_404(Notification, lesson=lesson)
-        print(notification_for_cancelled)
-        print(notification_for_cancelled.__dict__)
-        res = celery_app.delete_task(notification_for_cancelled.notification_task_id)
-        print(res)
+        if Notification.objects.filter(lesson=lesson).exists():
+            notification_for_cancelled = get_object_or_404(Notification, lesson=lesson)
+            res = celery_app.delete_task(notification_for_cancelled.notification_task_id)
+            print(res)

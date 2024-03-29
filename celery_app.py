@@ -1,5 +1,5 @@
 import os
-
+from celery.result import AsyncResult
 from celery import Celery
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'TutorToolkit.settings')
@@ -10,11 +10,9 @@ app.autodiscover_tasks()
 
 
 def delete_task(task_id):
-    print(task_id)
-    app.control.revoke(task_id, terminate=True)
-    res = app.control.revoke(task_id, terminate=True, signal='SIGKILL')
-    print(res)
-    return res
+    app.control.revoke(task_id)
+    result = AsyncResult(task_id)
+    return result.status
 
 
 @app.task(bind=True, ignore_result=True)
