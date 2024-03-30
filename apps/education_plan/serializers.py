@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.shortcuts import get_object_or_404
 from apps.education_plan.models import EducationPlan, Module, Card, Label
 from apps.account.serializers import ProfileSerializer
 
@@ -34,10 +35,20 @@ class EducationPlanForTutorSerializer(serializers.ModelSerializer):
 
 
 class LabelSerializer(serializers.ModelSerializer):
+    card_id = serializers.UUIDField(required=False, write_only=True)
+
     class Meta:
         model = Label
-        fields = ('id', 'title', 'color')
+        fields = ('id', 'title', 'color', 'card_id')
         read_only_fields = ('id',)
+
+    def create(self, validated_data):
+        card_id = validated_data.pop('card_id', None)
+        label = Label.objects.create(**validated_data)
+        if card_id:
+            card = get_object_or_404(Card, pk=card_id)
+            card.labels.add(label)
+        return label
 
 
 class CardSerializer(serializers.ModelSerializer):
