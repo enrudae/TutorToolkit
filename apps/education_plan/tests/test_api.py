@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 
 from apps.account.serializers import ProfileSerializer
-from apps.education_plan.models import Label, EducationPlan
+from apps.education_plan.models import Label, EducationPlan, Module, Card
 from apps.education_plan.serializers import LabelSerializer, EducationPlanForStudentSerializer, \
     EducationPlanForTutorSerializer
 
@@ -141,3 +141,101 @@ class GetUsersDataAPITestCase(APITestCase):
             'plans': plans_serialized_data,
         }
         self.assertEqual(response.data, expected_data)
+
+
+class ChangeOrderOfElementsTest(APITestCase):
+    def setUp(self):
+        self.user_tutor = User.objects.create_user(email='testuser@gmail.com', password='testpassword',
+                                                   role='tutor', first_name='first_name', last_name='last_name')
+        self.tutor = self.user_tutor.userprofile
+        self.client.force_authenticate(user=self.user_tutor)
+
+        self.plan = EducationPlan.objects.create(tutor=self.user_tutor.userprofile, student_first_name="John", student_last_name="Doe")
+
+        self.module1 = Module.objects.create(title="Test Module1", plan=self.plan)
+        self.module2 = Module.objects.create(title="Test Module2", plan=self.plan)
+        self.module3 = Module.objects.create(title="Test Module3", plan=self.plan)
+
+        self.card1 = Card.objects.create(title="Test Card1", module=self.module1)
+        self.card2 = Card.objects.create(title="Test Card2", module=self.module1)
+        self.card3 = Card.objects.create(title="Test Card3", module=self.module2)
+        self.card4 = Card.objects.create(title="Test Card4", module=self.module2)
+        self.card5 = Card.objects.create(title="Test Card5", module=self.module2)
+        self.card6 = Card.objects.create(title="Test Card6", module=self.module2)
+
+    def test_move_card_to_beginning_in_same_module(self):
+        # Перемещение карточки в начало модуля и проверка индексов других карточек
+        data = {
+            'element_type': 'task',
+            'element_id': self.card4.id,
+            'destination_id': self.module2.id,
+            'destination_index': 0
+        }
+        response = self.client.post(reverse('move_element'), data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.card3.refresh_from_db()
+        self.card4.refresh_from_db()
+        self.card5.refresh_from_db()
+        self.card6.refresh_from_db()
+        self.assertEqual(self.card4.index, 0)
+        self.assertEqual(self.card3.index, 1)
+        self.assertEqual(self.card5.index, 2)
+        self.assertEqual(self.card6.index, 3)
+
+    def test_move_card_to_middle_in_same_module(self):
+        # Перемещение карточки в середину модуля и проверка индексов других карточек
+        data = {
+            'element_type': 'task',
+            'element_id': self.card1.id,
+            'destination_id': self.module1.id,
+            'destination_index': 1
+        }
+        response = self.client.post(reverse('move_element'), data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.card1.refresh_from_db()
+        self.card2.refresh_from_db()
+        self.assertEqual(self.card2.index, 0)
+        self.assertEqual(self.card1.index, 1)
+
+    def test_move_card_to_empty_module(self):
+        # Перемещение карточки в пустой модуль и проверка индекса
+        self.assertTrue(self.module3.cards.count() == 0)
+        data = {
+            'element_type': 'task',
+            'element_id': self.card1.id,
+            'destination_id': self.module3.id,
+            'destination_index': 0
+        }
+        response = self.client.post(reverse('move_element'), data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.card1.refresh_from_db()
+        self.card2.refresh_from_db()
+        self.assertEqual(self.card1.module, self.module3)
+        self.assertEqual(self.card1.index, 0)
+        self.assertEqual(self.card2.index, 0)
+
+    def test_move_card_to_different_module_non_empty(self):
+        # Перемещение карточки в непустой другой модуль и проверка индексов
+        data = {
+            'element_type': 'task',
+            'element_id': self.card2.id,
+            'destination_id': self.module2.id,
+            'destination_index': 1
+        }
+        response = self.client.post(reverse('move_element'), data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.card2.refresh_from_db()
+        self.card3.refresh_from_db()
+        self.card4.refresh_from_db()
+        self.card5.refresh_from_db()
+        self.card6.refresh_from_db()
+        self.assertEqual(self.card2.module, self.module2)
+        self.assertEqual(self.card3.index, 0)
+        self.assertEqual(self.card2.index, 1)
+        self.assertEqual(self.card4.index, 2)
+        self.assertEqual(self.card5.index, 3)
+        self.assertEqual(self.card6.index, 4)
