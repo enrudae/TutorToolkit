@@ -52,24 +52,34 @@ class MoveElementService:
 
         with transaction.atomic():
             if source_module != destination_module:
-                MoveElementService.update_indexes_for_move_different_module(source_module, source_index, destination_module, destination_index)
+                MoveElementService.update_indexes_for_move_card_in_different_modules(source_module, source_index, destination_module, destination_index)
             else:
-                MoveElementService.update_indexes_for_move_in_same_module(source_module, source_index, destination_index)
+                MoveElementService.update_indexes_for_move_in_same_element(source_module.cards.all(), source_index, destination_index)
 
             card.index = destination_index
             card.module = destination_module
             card.save()
 
     @staticmethod
-    def update_indexes_for_move_different_module(source_module, source_index, destination_module, destination_index):
-        """Обновление индексов при перемещении между модулями."""
+    def move_module(module, destination_index):
+        """Перемещение модуля."""
+        with transaction.atomic():
+            source_index = module.index
+            plan = module.plan
+            MoveElementService.update_indexes_for_move_in_same_element(plan.modules.all(), source_index, destination_index)
+            module.index = destination_index
+            module.save()
+
+    @staticmethod
+    def update_indexes_for_move_card_in_different_modules(source_module, source_index, destination_module, destination_index):
+        """Обновление индексов карточек при перемещении между модулями."""
         source_module.cards.filter(index__gt=source_index).update(index=F('index') - 1)
         destination_module.cards.filter(index__gte=destination_index).update(index=F('index') + 1)
 
     @staticmethod
-    def update_indexes_for_move_in_same_module(module, source_index, destination_index):
-        """Обновление индексов при перемещении внутри модуля."""
+    def update_indexes_for_move_in_same_element(queryset, source_index, destination_index):
+        """Обновление индексов элементов при перемещении в одном наборе."""
         if source_index > destination_index:
-            module.cards.filter(index__gte=destination_index, index__lt=source_index).update(index=F('index') + 1)
+            queryset.filter(index__gte=destination_index, index__lt=source_index).update(index=F('index') + 1)
         elif source_index < destination_index:
-            module.cards.filter(index__gt=source_index, index__lte=destination_index).update(index=F('index') - 1)
+            queryset.filter(index__gt=source_index, index__lte=destination_index).update(index=F('index') - 1)

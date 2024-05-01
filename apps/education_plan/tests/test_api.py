@@ -239,3 +239,67 @@ class ChangeOrderOfElementsTest(APITestCase):
         self.assertEqual(self.card4.index, 2)
         self.assertEqual(self.card5.index, 3)
         self.assertEqual(self.card6.index, 4)
+
+    def test_move_module_to_beginning(self):
+        # Перемещение модуля в начало
+        data = {
+            'element_type': 'board',
+            'element_id': self.module3.id,
+            'destination_index': 0
+        }
+        response = self.client.post(reverse('move_element'), data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.module1.refresh_from_db()
+        self.module2.refresh_from_db()
+        self.module3.refresh_from_db()
+        self.assertEqual(self.module3.index, 0)
+        self.assertEqual(self.module1.index, 1)
+        self.assertEqual(self.module2.index, 2)
+
+    def test_move_module_to_middle(self):
+        # Перемещение модуля в середину
+        data = {
+            'element_type': 'board',
+            'element_id': self.module1.id,
+            'destination_index': 1
+        }
+        response = self.client.post(reverse('move_element'), data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.module1.refresh_from_db()
+        self.module2.refresh_from_db()
+        self.module3.refresh_from_db()
+        self.assertEqual(self.module2.index, 0)
+        self.assertEqual(self.module1.index, 1)
+        self.assertEqual(self.module3.index, 2)
+
+    def test_move_module_to_end(self):
+        # Перемещение модуля в конец
+        data = {
+            'element_type': 'board',
+            'element_id': self.module1.id,
+            'destination_index': 2
+        }
+        response = self.client.post(reverse('move_element'), data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.module1.refresh_from_db()
+        self.module2.refresh_from_db()
+        self.module3.refresh_from_db()
+        self.assertEqual(self.module2.index, 0)
+        self.assertEqual(self.module3.index, 1)
+        self.assertEqual(self.module1.index, 2)
+
+    def test_move_module_to_same_position(self):
+        # Перемещение модуля в ту же позицию
+        data = {
+            'element_type': 'board',
+            'element_id': self.module2.id,
+            'destination_index': 1
+        }
+        response = self.client.post(reverse('move_element'), data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.module2.refresh_from_db()
+        self.assertEqual(self.module2.index, 1)

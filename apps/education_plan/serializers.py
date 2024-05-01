@@ -74,8 +74,8 @@ class ModuleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Module
-        fields = ('id', 'title', 'plan', 'cards', 'plan_id')
-        read_only_fields = ('id', 'plan')
+        fields = ('id', 'title', 'plan', 'cards', 'plan_id', 'index')
+        read_only_fields = ('id', 'plan', 'index')
 
 
 class ModulesInEducationPlanSerializer(serializers.ModelSerializer):
