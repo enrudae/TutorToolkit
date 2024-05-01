@@ -103,8 +103,7 @@ class Card(models.Model):
     difficulty = models.CharField(max_length=15, choices=DIFFICULTY_CHOICES, default='not_selected')
 
     def save(self, *args, **kwargs):
-        # Если поле index не установлено, установите его
-        if not self.index:
+        if self.index is None:
             self.index = self.module.cards.count()
         super().save(*args, **kwargs)
 
