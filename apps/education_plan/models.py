@@ -5,6 +5,7 @@ from django.db import models
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from apps.account.models import UserProfile
+from TutorToolkit.constants import FILE_RESTRICTIONS
 
 
 class EducationPlan(models.Model):
@@ -120,3 +121,19 @@ class Card(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class File(models.Model):
+    FILE_TYPE_CHOICES = [(ext, data['display']) for ext, data in FILE_RESTRICTIONS.items()]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    file = models.FileField(upload_to='uploads/%Y/%m/%d/')
+    upload_date = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=255, editable=False)
+    extension = models.CharField(max_length=10, choices=FILE_TYPE_CHOICES, editable=False)
+    size = models.PositiveBigIntegerField(default=0, editable=False)
+    tutor = models.ForeignKey(UserProfile, related_name='files', on_delete=models.CASCADE)
+    card = models.ForeignKey(Card, related_name='files', on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.file.name} ({self.extension}, {self.size} bytes)"

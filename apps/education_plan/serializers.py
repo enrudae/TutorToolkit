@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
-from apps.education_plan.models import EducationPlan, Module, Card, Label
+from apps.education_plan.models import EducationPlan, Module, Card, Label, File
 from apps.account.serializers import ProfileSerializer
+from TutorToolkit.constants import FILE_RESTRICTIONS
 
 
 class EducationPlanSerializer(serializers.ModelSerializer):
@@ -101,5 +102,37 @@ class MoveElementSerializer(serializers.Serializer):
 
         if element_type == 'task' and destination_id is None:
             raise serializers.ValidationError("Field 'destination_id' is required for task.")
+
+        return data
+
+
+class FileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = File
+        fields = ('id', 'file', 'name', 'extension', 'size', 'upload_date', 'tutor', 'card')
+        read_only_fields = ('id', 'name', 'extension', 'size', 'upload_date', 'tutor', 'card')
+
+    def validate(self, data):
+        file = data.get('file')
+        if file:
+            name = file.name
+            extension = name.split('.')[-1].lower()
+            size = file.size
+
+            if extension not in FILE_RESTRICTIONS:
+                raise serializers.ValidationError({
+                    'file': [f"Файл с расширением {extension} не разрешен."]
+                })
+
+            max_size = FILE_RESTRICTIONS[extension]['max_size']
+            if size > max_size:
+                max_size_mb = max_size / 1024 / 1024
+                raise serializers.ValidationError({
+                    'file': [f"Размер файла {extension} должен быть менее {max_size_mb} MB."]
+                })
+
+            data['name'] = name
+            data['extension'] = extension
+            data['size'] = size
 
         return data

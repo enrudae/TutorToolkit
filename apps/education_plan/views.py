@@ -4,10 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import mixins, viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from apps.education_plan.models import EducationPlan, Module, Card, Label
+from apps.education_plan.models import EducationPlan, Module, Card, Label, File
 from apps.education_plan.serializers import EducationPlanSerializer, ModuleSerializer, ModulesInEducationPlanSerializer, \
     CardSerializer, LabelSerializer, EducationPlanForStudentSerializer, EducationPlanForTutorSerializer, \
-    MoveElementSerializer
+    MoveElementSerializer, FileSerializer
 from TutorToolkit.permissions import IsTutor, IsStudent, IsTutorCreator
 from apps.education_plan.services import StudentInvitationService, MoveElementService
 from apps.account.serializers import ProfileSerializer
@@ -201,6 +201,28 @@ class ChangeOrderOfElements(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TutorFilesView(APIView):
+    permission_classes = [IsAuthenticated, IsTutor]
+
+    def get(self, request):
+        """Получение списка файлов, загруженных учителем."""
+        user = self.request.user
+        profile = user.userprofile
+        files = profile.files.all()
+        serializer = FileSerializer(files, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        """Загрузка нового файла учителем."""
+        serializer = FileSerializer(data=request.data)
+        if serializer.is_valid():
+            user = self.request.user
+            profile = user.userprofile
+            serializer.save(tutor=profile)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class test_send(APIView):
