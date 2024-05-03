@@ -2,11 +2,12 @@ from django.urls import path, include
 from rest_framework import routers
 from apps.education_plan.views import GetInviteInfoByCode, EducationPlanViewSet, ModuleViewSet, \
     CardViewSet, LabelViewSet, GetUsersData, test_send, AddStudentToTeacherByInviteCode, ChangeOrderOfElements, \
-    TutorFilesView
+    TutorFilesView, CardContentViewSet
 
 router = routers.DefaultRouter()
 router.register('module', ModuleViewSet, basename='module')
 router.register('card', CardViewSet, basename='card')
+router.register('card_content', CardContentViewSet, basename='card_content')
 router.register('label', LabelViewSet, basename='label')
 router.register('', EducationPlanViewSet, basename='education_plan')
 

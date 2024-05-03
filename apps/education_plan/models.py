@@ -114,11 +114,6 @@ class Card(models.Model):
             self.index = self.module.cards.count()
         super().save(*args, **kwargs)
 
-    # def perform_create(self, serializer):
-    #     instance = serializer.save()
-    #     instance.index = instance.module.cards.count()
-    #     instance.save()
-
     def __str__(self):
         return self.title
 
@@ -133,7 +128,14 @@ class File(models.Model):
     extension = models.CharField(max_length=10, choices=FILE_TYPE_CHOICES, editable=False)
     size = models.PositiveBigIntegerField(default=0, editable=False)
     tutor = models.ForeignKey(UserProfile, related_name='files', on_delete=models.CASCADE)
-    card = models.ForeignKey(Card, related_name='files', on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return f"{self.file.name} ({self.extension}, {self.size} bytes)"
+
+
+class CardContent(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    text = models.TextField(blank=True)
+    homework_files = models.ManyToManyField(File, related_name='homework_files', blank=True)
+    lesson_files = models.ManyToManyField(File, related_name='lesson_files', blank=True)
+    card = models.OneToOneField(Card, related_name='content', on_delete=models.CASCADE)

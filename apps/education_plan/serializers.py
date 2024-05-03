@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
-from apps.education_plan.models import EducationPlan, Module, Card, Label, File
+from apps.education_plan.models import EducationPlan, Module, Card, Label, File, CardContent
 from apps.account.serializers import ProfileSerializer
 from TutorToolkit.constants import FILE_RESTRICTIONS
 
@@ -67,6 +67,15 @@ class CardSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['labels'] = LabelSerializer(instance.labels.all(), many=True).data
         return representation
+
+
+class CardContentSerializer(serializers.ModelSerializer):
+    card_id = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = CardContent
+        fields = ('id', 'text', 'homework_files', 'lesson_files', 'card', 'card_id')
+        read_only_fields = ('id', 'card')
 
 
 class ModuleSerializer(serializers.ModelSerializer):
