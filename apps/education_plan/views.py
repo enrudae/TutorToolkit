@@ -4,10 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import mixins, viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from apps.education_plan.models import EducationPlan, Module, Card, Label, File
+from apps.education_plan.models import EducationPlan, Module, Card, Label, File, CardContent
 from apps.education_plan.serializers import EducationPlanSerializer, ModuleSerializer, ModulesInEducationPlanSerializer, \
     CardSerializer, LabelSerializer, EducationPlanForStudentSerializer, EducationPlanForTutorSerializer, \
-    MoveElementSerializer, FileSerializer
+    MoveElementSerializer, FileSerializer, CardContentSerializer
 from TutorToolkit.permissions import IsTutor, IsStudent, IsTutorCreator
 from apps.education_plan.services import StudentInvitationService, MoveElementService
 from apps.account.serializers import ProfileSerializer
@@ -39,8 +39,8 @@ class EducationPlanViewSet(mixins.ListModelMixin,
 
     def perform_create(self, serializer):
         user = self.request.user
-        plan = serializer.save(tutor=user.userprofile)
         email = serializer.context['request'].data.get('email')
+        plan = serializer.save(tutor=user.userprofile, student_email=email)
         if StudentInvitationService.check_email_exists(email):
             Notification.create_notification(plan, 'invite', email=email)
 
@@ -90,7 +90,31 @@ class CardViewSet(mixins.CreateModelMixin,
     def perform_create(self, serializer):
         module_id = self.request.data.get('module_id')
         module = get_object_or_404(Module, pk=module_id)
-        serializer.save(module=module)
+        card = serializer.save(module=module)
+        CardContent.objects.create(card=card)
+
+
+class CardContentViewSet(mixins.RetrieveModelMixin,
+                         mixins.UpdateModelMixin,
+                         viewsets.GenericViewSet):
+    serializer_class = CardContentSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        user_profile = self.request.user.userprofile
+        if user_profile.role == 'tutor':
+            return CardContent.objects.filter(card__module__plan__tutor=user_profile)
+        return CardContent.objects.filter(card__module__plan__student=user_profile)
+
+    def perform_create(self, serializer):
+        card_id = self.request.data.get('card_id')
+        card = get_object_or_404(Card, pk=card_id)
+        serializer.save(card=card)
+
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update']:
+            return [IsAuthenticated(), IsTutor()]
+        return super().get_permissions()
 
 
 class LabelViewSet(mixins.ListModelMixin,
@@ -121,6 +145,7 @@ class GetInviteInfoByCode(APIView):
             'first_name': plan.tutor.first_name,
             'last_name': plan.tutor.last_name,
             'discipline': plan.discipline,
+            'student_email': plan.student_email,
         }
 
         return Response(data=data, status=status.HTTP_200_OK)

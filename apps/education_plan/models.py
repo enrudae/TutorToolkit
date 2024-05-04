@@ -16,6 +16,7 @@ class EducationPlan(models.Model):
     discipline = models.CharField(max_length=80, blank=True)
     student_first_name = models.CharField(max_length=50)
     student_last_name = models.CharField(max_length=50)
+    student_email = models.CharField(max_length=50)
 
     STATUS_CHOICES = (
         ('active', 'Active'),
@@ -134,8 +135,7 @@ class File(models.Model):
 
 
 class CardContent(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    card = models.OneToOneField(Card, primary_key=True, related_name='content', on_delete=models.CASCADE)
     text = models.TextField(blank=True)
     homework_files = models.ManyToManyField(File, related_name='homework_files', blank=True)
     lesson_files = models.ManyToManyField(File, related_name='lesson_files', blank=True)
-    card = models.OneToOneField(Card, related_name='content', on_delete=models.CASCADE)

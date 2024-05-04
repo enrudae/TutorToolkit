@@ -69,15 +69,6 @@ class CardSerializer(serializers.ModelSerializer):
         return representation
 
 
-class CardContentSerializer(serializers.ModelSerializer):
-    card_id = serializers.CharField(write_only=True)
-
-    class Meta:
-        model = CardContent
-        fields = ('id', 'text', 'homework_files', 'lesson_files', 'card', 'card_id')
-        read_only_fields = ('id', 'card')
-
-
 class ModuleSerializer(serializers.ModelSerializer):
     cards = CardSerializer(many=True, read_only=True)
     plan_id = serializers.CharField(write_only=True)
@@ -116,10 +107,12 @@ class MoveElementSerializer(serializers.Serializer):
 
 
 class FileSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=True)
+
     class Meta:
         model = File
-        fields = ('id', 'file', 'name', 'extension', 'size', 'upload_date', 'tutor', 'card')
-        read_only_fields = ('id', 'name', 'extension', 'size', 'upload_date', 'tutor', 'card')
+        fields = ('id', 'file', 'name', 'extension', 'size', 'upload_date', 'tutor')
+        read_only_fields = ('id', 'extension', 'size', 'upload_date', 'tutor')
 
     def validate(self, data):
         file = data.get('file')
@@ -140,8 +133,22 @@ class FileSerializer(serializers.ModelSerializer):
                     'file': [f"Размер файла {extension} должен быть менее {max_size_mb} MB."]
                 })
 
-            data['name'] = name
             data['extension'] = extension
             data['size'] = size
 
         return data
+
+
+class CardContentSerializer(serializers.ModelSerializer):
+    card_id = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = CardContent
+        fields = ('text', 'homework_files', 'lesson_files', 'card', 'card_id')
+        read_only_fields = ('card', )
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['homework_files'] = FileSerializer(instance.homework_files.all(), many=True).data
+        representation['lesson_files'] = FileSerializer(instance.lesson_files.all(), many=True).data
+        return representation
