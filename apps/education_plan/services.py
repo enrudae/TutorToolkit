@@ -42,6 +42,11 @@ class StudentInvitationService:
         User = get_user_model()
         return get_object_or_404(User, email=email)
 
+    @staticmethod
+    def get_userprofile_by_email(email):
+        user = StudentInvitationService.get_user_by_email(email)
+        return user.userprofile
+
 
 class MoveElementService:
     """Перемещение карточки."""

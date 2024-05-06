@@ -1,9 +1,10 @@
 from django.db.models import Q, F, Prefetch
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import mixins, viewsets, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.exceptions import ValidationError
 from apps.education_plan.models import EducationPlan, Module, Card, Label, File, CardContent
 from apps.education_plan.serializers import EducationPlanSerializer, ModuleSerializer, ModulesInEducationPlanSerializer, \
     CardSerializer, LabelSerializer, EducationPlanForStudentSerializer, EducationPlanForTutorSerializer, \
@@ -40,6 +41,9 @@ class EducationPlanViewSet(mixins.ListModelMixin,
     def perform_create(self, serializer):
         user = self.request.user
         email = serializer.context['request'].data.get('email')
+        if EducationPlan.objects.filter(tutor=user.userprofile, student_email=email).exists():
+            raise ValidationError({"email": "Студент с этим email уже приглашен к этому учителю."})
+
         plan = serializer.save(tutor=user.userprofile, student_email=email)
         if StudentInvitationService.check_email_exists(email):
             Notification.create_notification(plan, 'invite', email=email)
@@ -155,6 +159,7 @@ class GetUsersData(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        """Получение информации по текущему пользователю и всем прикрепленным к нему ученикам/учителям."""
         user = self.request.user
         profile = user.userprofile
         profile_field = profile.role
@@ -185,6 +190,7 @@ class AddStudentToTeacherByInviteCode(APIView):
     permission_classes = [IsAuthenticated, IsStudent]
 
     def post(self, request, invite_code):
+        """Подтверждение приглашения учителя."""
         user = self.request.user
         profile = user.userprofile
         if profile.role != 'student':
@@ -203,6 +209,7 @@ class ChangeOrderOfElements(APIView):
     permission_classes = [IsAuthenticated, IsTutor]
 
     def post(self, request):
+        """Изменение порядка элементов (модуля, карточки)."""
         user = self.request.user
         profile = user.userprofile
 

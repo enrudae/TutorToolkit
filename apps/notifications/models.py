@@ -38,7 +38,7 @@ class Notification(models.Model):
         content = ''
 
         if notification_type == 'invite' and email:
-            student = StudentInvitationService.get_user_by_email(email)
+            student = StudentInvitationService.get_userprofile_by_email(email)
             text = f'Преподаватель {tutor.last_name} {tutor.first_name} приглашает Вас подключиться к дисциплине {plan.discipline}'
             content = plan.invite_code
         elif notification_type == 'info' and lesson:
