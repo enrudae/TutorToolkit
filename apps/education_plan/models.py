@@ -139,3 +139,4 @@ class CardContent(models.Model):
     text = models.TextField(blank=True)
     homework_files = models.ManyToManyField(File, related_name='homework_files', blank=True)
     lesson_files = models.ManyToManyField(File, related_name='lesson_files', blank=True)
+    repetition_files = models.ManyToManyField(File, related_name='repetition_files', blank=True)

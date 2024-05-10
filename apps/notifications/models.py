@@ -13,7 +13,9 @@ from apps.notifications.tasks import send_notification
 
 class Notification(models.Model):
     TYPE_CHOICES = (
-        ('info', 'INFO'),
+        ('lesson_reminder', 'LESSON_REMINDER'),
+        ('repetition_reminder', 'REPETITION_REMINDER'),
+        ('homework_info', 'HOMEWORK_INFO'),
         ('invite', 'INVITE'),
         ('canceling', 'CANCELING'),
         ('rescheduling', 'RESCHEDULING')
@@ -25,7 +27,7 @@ class Notification(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     notification_task_id = models.CharField(blank=True)
-    type = models.CharField(max_length=15, choices=TYPE_CHOICES, default='not_started')
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     education_plan = models.ForeignKey(EducationPlan, on_delete=models.CASCADE)
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, blank=True, null=True)
     recipient = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
@@ -41,7 +43,7 @@ class Notification(models.Model):
             student = StudentInvitationService.get_userprofile_by_email(email)
             text = f'Преподаватель {tutor.last_name} {tutor.first_name} приглашает Вас подключиться к дисциплине {plan.discipline}'
             content = plan.invite_code
-        elif notification_type == 'info' and lesson:
+        elif notification_type == 'lesson_reminder' and lesson:
             notification_time = lesson.date_start - timedelta(hours=3)
             text = f'Урок по предмету {plan.discipline} будет через 3 часа'
             notification_task_id = send_notification.apply_async(args=(student.user.id, text, lesson.id), eta=notification_time)

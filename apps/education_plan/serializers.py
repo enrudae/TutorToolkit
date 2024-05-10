@@ -144,11 +144,12 @@ class CardContentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CardContent
-        fields = ('text', 'homework_files', 'lesson_files', 'card', 'card_id')
+        fields = ('text', 'homework_files', 'lesson_files', 'repetition_files', 'card', 'card_id')
         read_only_fields = ('card', )
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['homework_files'] = FileSerializer(instance.homework_files.all(), many=True).data
         representation['lesson_files'] = FileSerializer(instance.lesson_files.all(), many=True).data
+        representation['repetition_files'] = FileSerializer(instance.repetition_files.all(), many=True).data
         return representation

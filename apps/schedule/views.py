@@ -41,7 +41,7 @@ class LessonViewSet(mixins.ListModelMixin,
     def perform_create(self, serializer):
         serializer.save()
         lesson = serializer.instance
-        Notification.create_notification(lesson.education_plan, 'info', lesson=lesson)
+        Notification.create_notification(lesson.education_plan, 'lesson_reminder', lesson=lesson)
         lesson.save()
 
     def perform_destroy(self, instance):
