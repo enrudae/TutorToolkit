@@ -3,6 +3,7 @@ from django.db.models import Q, F
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.contrib.auth import get_user_model
+from apps.notifications.models import Notification
 
 
 class StudentInvitationService:
@@ -30,7 +31,16 @@ class StudentInvitationService:
         plan.status = 'active'
         plan.save()
 
+        StudentInvitationService.deactivate_invite_notification(plan)
+
         return {'detail': 'Студент добавлен к учителю.'}, status.HTTP_200_OK
+
+    @staticmethod
+    def deactivate_invite_notification(education_plan):
+        invite_notification = Notification.objects.filter(education_plan=education_plan, type='invite').first()
+        if invite_notification:
+            invite_notification.is_active = False
+            invite_notification.save()
 
     @staticmethod
     def check_email_exists(email):

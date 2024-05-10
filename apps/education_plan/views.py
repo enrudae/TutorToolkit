@@ -189,12 +189,13 @@ class GetUsersData(APIView):
 class AddStudentToTeacherByInviteCode(APIView):
     permission_classes = [IsAuthenticated, IsStudent]
 
-    def post(self, request, invite_code):
+    def post(self, request):
         """Подтверждение приглашения учителя."""
         user = self.request.user
         profile = user.userprofile
-        if profile.role != 'student':
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        invite_code = request.data.get('invite_code')
+        if not invite_code:
+            return Response(data={'error': 'invite_code is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         _, error_response, status_code = StudentInvitationService.check_available_invite_code(invite_code)
         if error_response:
