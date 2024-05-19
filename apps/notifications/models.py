@@ -33,7 +33,7 @@ class Notification(models.Model):
     recipient = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
 
     @staticmethod
-    def create_notification(plan, notification_type, lesson=None, email=None):
+    def create_notification(plan, notification_type, lesson=None, email=None, card=None):
         tutor = plan.tutor
         student = plan.student
         notification_task_id = ''
@@ -42,6 +42,10 @@ class Notification(models.Model):
         if notification_type == 'invite' and email:
             student = StudentInvitationService.get_userprofile_by_email(email)
             text = f'Преподаватель {tutor.last_name} {tutor.first_name} приглашает Вас подключиться к дисциплине {plan.discipline}'
+            content = plan.invite_code
+        elif notification_type == 'repetition_reminder' and card:
+            text = f'Необходимо повторить тему {card.title}'
+            notification_task_id = send_notification.delay(student.user.id, text)
             content = plan.invite_code
         elif notification_type == 'lesson_reminder' and lesson:
             notification_time = lesson.date_start - timedelta(hours=3)

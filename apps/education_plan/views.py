@@ -226,14 +226,15 @@ class ChangeOrderOfElements(APIView):
                 card = get_object_or_404(Card, id=element_id, module__plan__tutor=profile)
                 module = get_object_or_404(Module, id=destination_id, plan__tutor=profile)
                 MoveElementService.move_card(card, destination_index, module)
+                serializer = CardSerializer(card)
             else:
                 module = get_object_or_404(Module, id=element_id, plan__tutor=profile)
                 MoveElementService.move_module(module, destination_index)
+                serializer = ModuleSerializer(module)
 
-            serializer = ModulesInEducationPlanSerializer(module.plan)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TutorFilesView(APIView):

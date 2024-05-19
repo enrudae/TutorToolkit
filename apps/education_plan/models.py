@@ -4,7 +4,9 @@ import uuid
 from django.db import models
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
+import celery_app
 from apps.account.models import UserProfile
+from apps.education_plan.tasks import change_card_status_to_repeat
 from TutorToolkit.constants import FILE_RESTRICTIONS
 
 
@@ -90,6 +92,7 @@ class Card(models.Model):
     date_end = models.DateTimeField(blank=True, null=True)
     plan_time = models.DurationField(blank=True, null=True)
     result_time = models.DurationField(blank=True, null=True)
+    repetition_date = models.DateTimeField(blank=True, null=True)
     module = models.ForeignKey(Module, related_name='cards', on_delete=models.CASCADE)
     labels = models.ManyToManyField(Label, related_name='cards', blank=True)
     index = models.IntegerField()
@@ -110,10 +113,19 @@ class Card(models.Model):
     )
     difficulty = models.CharField(max_length=15, choices=DIFFICULTY_CHOICES, default='not_selected')
 
+    def handle_repetition_task(self):
+        task_id = f"change_status-{self.id}"
+
+        # status = celery_app.delete_task(task_id)
+
+        if self.repetition_date:
+            change_card_status_to_repeat.apply_async((self.id,), eta=self.repetition_date, task_id=task_id)
+
     def save(self, *args, **kwargs):
         if self.index is None:
             self.index = self.module.cards.count()
         super().save(*args, **kwargs)
+        self.handle_repetition_task()
 
     def __str__(self):
         return self.title
