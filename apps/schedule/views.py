@@ -45,7 +45,7 @@ class LessonViewSet(mixins.ListModelMixin,
         lesson.save()
 
     def perform_destroy(self, instance):
-        Notification.cancel_lesson_notification(instance)
+        # Notification.cancel_lesson_notification(instance)
         Notification.create_notification(instance.education_plan, 'canceling', lesson=instance)
         instance.is_cancelled = True
         instance.save()
@@ -53,5 +53,5 @@ class LessonViewSet(mixins.ListModelMixin,
     def perform_update(self, serializer):
         serializer.save()
         lesson = serializer.instance
-        Notification.cancel_lesson_notification(lesson)
+        # Notification.cancel_lesson_notification(lesson)
         Notification.create_notification(lesson.education_plan, 'rescheduling', lesson=lesson)

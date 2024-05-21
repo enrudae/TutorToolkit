@@ -46,7 +46,7 @@ class Notification(models.Model):
         elif notification_type == 'repetition_reminder' and card:
             text = f'Необходимо повторить тему {card.title}'
             notification_task_id = send_notification.delay(student.user.id, text)
-            content = plan.invite_code
+            content = card.id
         elif notification_type == 'lesson_reminder' and lesson:
             notification_time = lesson.date_start - timedelta(hours=3)
             text = f'Урок по предмету {plan.discipline} будет через 3 часа'
