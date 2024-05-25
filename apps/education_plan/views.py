@@ -275,6 +275,14 @@ class TutorFilesView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, file_id):
+        """Удаление файла по id."""
+        user = self.request.user
+        profile = user.userprofile
+        file = get_object_or_404(File, id=file_id, tutor=profile)
+        file.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class test_send(APIView):
     def get(self, request):

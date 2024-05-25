@@ -130,7 +130,8 @@ class FileSerializer(serializers.ModelSerializer):
             if size > max_size:
                 max_size_mb = max_size / 1024 / 1024
                 raise serializers.ValidationError({
-                    'file': [f"Размер файла {extension} должен быть менее {max_size_mb} MB."]
+                    'file': [f"Размер файла {extension} должен быть менее {max_size_mb} MB."],
+                    'name': name
                 })
 
             data['extension'] = extension

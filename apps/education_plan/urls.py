@@ -19,4 +19,5 @@ urlpatterns = [
     path('test_send', test_send.as_view()),
     path('move_element', ChangeOrderOfElements.as_view(), name='move_element'),
     path('files', TutorFilesView.as_view(), name='tutor-files'),
+    path('files/<uuid:file_id>/', TutorFilesView.as_view(), name='tutor-file-delete'),
 ]
