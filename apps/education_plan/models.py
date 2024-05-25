@@ -15,7 +15,7 @@ class EducationPlan(models.Model):
     tutor = models.ForeignKey(UserProfile, related_name='tutor_plans', on_delete=models.CASCADE)
     student = models.ForeignKey(UserProfile, related_name='student_plans', on_delete=models.CASCADE, blank=True, null=True)
     invite_code = models.CharField(max_length=8, unique=True, db_index=True)
-    discipline = models.CharField(max_length=80, blank=True)
+    discipline = models.CharField(max_length=100, blank=True)
     student_first_name = models.CharField(max_length=50)
     student_last_name = models.CharField(max_length=50)
     student_email = models.CharField(max_length=50)
@@ -44,7 +44,7 @@ class EducationPlan(models.Model):
 
 class Label(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=25)
+    title = models.CharField(max_length=100)
     tutor = models.ForeignKey(UserProfile, related_name='labels', on_delete=models.CASCADE)
     color = models.CharField(
         max_length=7,
@@ -71,7 +71,7 @@ class Label(models.Model):
 
 class Module(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=25)
+    title = models.CharField(max_length=100)
     plan = models.ForeignKey(EducationPlan, related_name='modules', on_delete=models.CASCADE)
     index = models.IntegerField()
 
@@ -86,7 +86,7 @@ class Module(models.Model):
 
 class Card(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=25)
+    title = models.CharField(max_length=100)
     description = models.CharField(max_length=255, blank=True)
     date_start = models.DateTimeField(blank=True, null=True)
     date_end = models.DateTimeField(blank=True, null=True)
@@ -146,9 +146,20 @@ class File(models.Model):
         return f"{self.file.name} ({self.extension}, {self.size} bytes)"
 
 
+class SectionContent(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    text = models.TextField(blank=True)
+    files = models.ManyToManyField(File, related_name='section_contents', blank=True)
+
+    def __str__(self):
+        return f"{self.id}"
+
+
 class CardContent(models.Model):
     card = models.OneToOneField(Card, primary_key=True, related_name='content', on_delete=models.CASCADE)
-    text = models.TextField(blank=True)
-    homework_files = models.ManyToManyField(File, related_name='homework_files', blank=True)
-    lesson_files = models.ManyToManyField(File, related_name='lesson_files', blank=True)
-    repetition_files = models.ManyToManyField(File, related_name='repetition_files', blank=True)
+    homework = models.OneToOneField(SectionContent, related_name='homework', on_delete=models.SET_NULL, null=True,
+                                    blank=True)
+    lesson = models.OneToOneField(SectionContent, related_name='lesson', on_delete=models.SET_NULL, null=True,
+                                  blank=True)
+    repetition = models.OneToOneField(SectionContent, related_name='repetition', on_delete=models.SET_NULL, null=True,
+                                      blank=True)

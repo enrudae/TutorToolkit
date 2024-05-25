@@ -4,11 +4,12 @@ from rest_framework import mixins, viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from apps.education_plan.models import EducationPlan, Module, Card, Label, File, CardContent
+from apps.education_plan.models import EducationPlan, Module, Card, Label, File, CardContent, SectionContent
 from apps.education_plan.serializers import EducationPlanSerializer, ModuleSerializer, ModulesInEducationPlanSerializer, \
     CardSerializer, LabelSerializer, EducationPlanForStudentSerializer, EducationPlanForTutorSerializer, \
-    MoveElementSerializer, FileSerializer, CardContentSerializer
+    MoveElementSerializer, FileSerializer, CardContentSerializer, SectionContentSerializer
 from TutorToolkit.permissions import IsTutor, IsStudent, IsTutorCreator
 from apps.education_plan.services import StudentInvitationService, MoveElementService
 from apps.account.serializers import ProfileSerializer
@@ -119,6 +120,22 @@ class CardContentViewSet(mixins.RetrieveModelMixin,
         if self.action in ['update', 'partial_update']:
             return [IsAuthenticated(), IsTutor()]
         return super().get_permissions()
+
+    @action(detail=True, methods=['patch'], url_path='update-section/(?P<section_type>homework|lesson|repetition)')
+    def update_section(self, request, pk=None, section_type=None):
+        card_content = self.get_object()
+        section_content = getattr(card_content, section_type)
+
+        if section_content is None:
+            section_content = SectionContent.objects.create(text="")
+            setattr(card_content, section_type, section_content)
+            card_content.save()
+
+        serializer = SectionContentSerializer(section_content, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LabelViewSet(mixins.ListModelMixin,

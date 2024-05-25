@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
-from apps.education_plan.models import EducationPlan, Module, Card, Label, File, CardContent
+from apps.education_plan.models import EducationPlan, Module, Card, Label, File, CardContent, SectionContent
 from apps.account.serializers import ProfileSerializer
 from TutorToolkit.constants import FILE_RESTRICTIONS
 
@@ -139,18 +139,29 @@ class FileSerializer(serializers.ModelSerializer):
         return data
 
 
+class SectionContentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SectionContent
+        fields = ('id', 'text', 'files',)
+        read_only_fields = ('id',)
+
+
 class CardContentSerializer(serializers.ModelSerializer):
     card_id = serializers.CharField(write_only=True)
+    homework = SectionContentSerializer(required=False, allow_null=True)
+    lesson = SectionContentSerializer(required=False, allow_null=True)
+    repetition = SectionContentSerializer(required=False, allow_null=True)
 
     class Meta:
         model = CardContent
-        fields = ('text', 'homework_files', 'lesson_files', 'repetition_files', 'card', 'card_id')
+        fields = ('homework', 'lesson', 'repetition', 'card', 'card_id')
         read_only_fields = ('card',)
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['homework_files'] = FileSerializer(instance.homework_files.all(), many=True).data
-        representation['lesson_files'] = FileSerializer(instance.lesson_files.all(), many=True).data
-        representation['repetition_files'] = FileSerializer(instance.repetition_files.all(), many=True).data
+        representation['homework'] = SectionContentSerializer(instance.homework).data
+        representation['lesson'] = SectionContentSerializer(instance.lesson).data
+        representation['repetition'] = SectionContentSerializer(instance.repetition).data
         representation['card_title'] = instance.card.title
         return representation
