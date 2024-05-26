@@ -89,7 +89,7 @@ class CardViewSet(mixins.CreateModelMixin,
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Card.objects.filter(module__plan__tutor__user=user)
+        queryset = Card.objects.filter(module__plan__tutor__user=user, is_template=False)
         return queryset
 
     def perform_create(self, serializer):
@@ -97,6 +97,30 @@ class CardViewSet(mixins.CreateModelMixin,
         module = get_object_or_404(Module, pk=module_id)
         card = serializer.save(module=module)
         CardContent.objects.create(card=card)
+
+    @action(detail=True, methods=['post'])
+    def create_template(self, request, pk=None):
+        card = get_object_or_404(Card, pk=pk)
+        template = card.create_template()
+        return Response(CardSerializer(template).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'])
+    def templates(self, request):
+        templates = Card.objects.filter(is_template=True)
+        serializer = self.get_serializer(templates, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def create_card_from_template(self, request, pk=None):
+        template = get_object_or_404(Card, pk=pk)
+        if not template.is_template:
+            return Response({"detail": "Only templates can be used to create new cards."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        module_id = request.data.get('module_id')
+        module = get_object_or_404(Module, pk=module_id)
+        new_card = template.create_card_from_template(module)
+        return Response(CardSerializer(new_card).data, status=status.HTTP_201_CREATED)
 
 
 class CardContentViewSet(mixins.RetrieveModelMixin,

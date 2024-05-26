@@ -93,9 +93,10 @@ class Card(models.Model):
     plan_time = models.DurationField(blank=True, null=True)
     result_time = models.DurationField(blank=True, null=True)
     repetition_date = models.DateTimeField(blank=True, null=True)
-    module = models.ForeignKey(Module, related_name='cards', on_delete=models.CASCADE)
+    module = models.ForeignKey(Module, related_name='cards', on_delete=models.CASCADE, blank=True, null=True)
     labels = models.ManyToManyField(Label, related_name='cards', blank=True)
-    index = models.IntegerField()
+    index = models.IntegerField(blank=True, null=True)
+    is_template = models.BooleanField(default=False)
 
     STATUS_CHOICES = (
         ('not_started', 'NOT_STARTED'),
@@ -122,10 +123,60 @@ class Card(models.Model):
             change_card_status_to_repeat.apply_async((self.id,), eta=self.repetition_date, task_id=task_id)
 
     def save(self, *args, **kwargs):
-        if self.index is None:
+        if self.index is None and not self.is_template:
             self.index = self.module.cards.count()
         super().save(*args, **kwargs)
         self.handle_repetition_task()
+
+    def create_template(self):
+        template = Card.objects.create(
+            title=self.title,
+            description=self.description,
+            is_template=True
+        )
+        template.labels.set(self.labels.all())
+
+        card_content = self.content
+
+        CardContent.objects.create(
+            card=template,
+            homework=self._copy_section_content(card_content.homework),
+            lesson=self._copy_section_content(card_content.lesson),
+            repetition=self._copy_section_content(card_content.repetition)
+        )
+        return template
+
+    def create_card_from_template(self, module):
+        if not self.is_template:
+            raise ValueError("Only templates can be used to create new cards.")
+
+        card = Card.objects.create(
+            title=self.title,
+            description=self.description,
+            module=module
+        )
+        card.labels.set(self.labels.all())
+
+        card_content = self.content
+        new_homework = self._copy_section_content(card_content.homework)
+        new_lesson = self._copy_section_content(card_content.lesson)
+        new_repetition = self._copy_section_content(card_content.repetition)
+
+        CardContent.objects.create(
+            card=card,
+            homework=new_homework,
+            lesson=new_lesson,
+            repetition=new_repetition
+        )
+        return card
+
+    @staticmethod
+    def _copy_section_content(section_content):
+        if section_content is None:
+            return None
+        new_section_content = SectionContent.objects.create(text=section_content.text)
+        new_section_content.files.set(section_content.files.all())
+        return new_section_content
 
     def __str__(self):
         return self.title

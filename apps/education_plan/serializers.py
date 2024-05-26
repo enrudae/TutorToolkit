@@ -147,6 +147,11 @@ class SectionContentSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'files',)
         read_only_fields = ('id',)
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['files'] = FileSerializer(instance.files.all(), many=True).data
+        return representation
+
 
 class CardContentSerializer(serializers.ModelSerializer):
     card_id = serializers.CharField(write_only=True)
