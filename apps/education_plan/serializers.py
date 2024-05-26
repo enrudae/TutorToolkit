@@ -123,7 +123,8 @@ class FileSerializer(serializers.ModelSerializer):
 
             if extension not in FILE_RESTRICTIONS:
                 raise serializers.ValidationError({
-                    'file': [f"Файл с расширением {extension} не разрешен."]
+                    'file': [f"Файл с расширением {extension} не разрешен."],
+                    'name': name
                 })
 
             max_size = FILE_RESTRICTIONS[extension]['max_size']

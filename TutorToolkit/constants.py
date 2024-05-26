@@ -1,5 +1,6 @@
 FILE_RESTRICTIONS = {
     'pdf': {'display': 'PDF', 'max_size': 10 * 1024 * 1024},
+    'pptx': {'display': 'PPTX', 'max_size': 10 * 1024 * 1024},
     'docx': {'display': 'DOCX', 'max_size': 5 * 1024 * 1024},
     'bmp': {'display': 'BMP', 'max_size': 5 * 1024 * 1024},
     'gif': {'display': 'GIF', 'max_size': 5 * 1024 * 1024},
