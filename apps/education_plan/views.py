@@ -13,7 +13,7 @@ from apps.education_plan.serializers import EducationPlanSerializer, ModuleSeria
 from TutorToolkit.permissions import IsTutor, IsStudent, IsTutorCreator
 from apps.education_plan.services import StudentInvitationService, MoveElementService
 from apps.account.serializers import ProfileSerializer
-from apps.notifications.models import Notification
+from apps.notifications.services import NotificationService
 
 
 class EducationPlanViewSet(mixins.ListModelMixin,
@@ -47,7 +47,7 @@ class EducationPlanViewSet(mixins.ListModelMixin,
 
         plan = serializer.save(tutor=user.userprofile, student_email=email)
         if StudentInvitationService.check_email_exists(email):
-            Notification.create_notification(plan, 'invite', email=email)
+            NotificationService.handle_invite(plan, email)
 
     def get_permissions(self):
         if self.action == 'create':

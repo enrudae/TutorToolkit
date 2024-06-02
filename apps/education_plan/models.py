@@ -3,8 +3,6 @@ import string
 import uuid
 from django.db import models
 from django.core.validators import RegexValidator
-from django.core.exceptions import ValidationError
-import celery_app
 from apps.account.models import UserProfile
 from apps.education_plan.tasks import change_card_status_to_repeat
 from TutorToolkit.constants import FILE_RESTRICTIONS

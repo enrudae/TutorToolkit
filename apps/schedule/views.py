@@ -1,8 +1,7 @@
 from django.db.models import Q
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
-from apps.notifications.tasks import send_notification
-# from apps.notifications.utils import delete_notification
+from apps.notifications.services import NotificationService
 from apps.schedule.models import Lesson
 from apps.education_plan.models import EducationPlan
 from apps.schedule.serializers import LessonSerializerForTutorSerializer, LessonSerializerForStudentSerializer
@@ -41,17 +40,15 @@ class LessonViewSet(mixins.ListModelMixin,
     def perform_create(self, serializer):
         serializer.save()
         lesson = serializer.instance
-        Notification.create_notification(lesson.education_plan, 'lesson_reminder', lesson=lesson)
+        NotificationService.handle_lesson_reminder(lesson.education_plan, lesson)
         lesson.save()
 
     def perform_destroy(self, instance):
-        # Notification.cancel_lesson_notification(instance)
-        Notification.create_notification(instance.education_plan, 'canceling', lesson=instance)
+        NotificationService.handle_canceling(instance.education_plan, instance)
         instance.is_cancelled = True
         instance.save()
 
     def perform_update(self, serializer):
         serializer.save()
         lesson = serializer.instance
-        # Notification.cancel_lesson_notification(lesson)
-        Notification.create_notification(lesson.education_plan, 'rescheduling', lesson=lesson)
+        NotificationService.handle_rescheduling(lesson.education_plan, lesson)
