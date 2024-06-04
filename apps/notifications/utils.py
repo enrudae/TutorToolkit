@@ -1,6 +1,5 @@
 import requests
 from django.core.mail import send_mail
-from celery.result import AsyncResult
 from TutorToolkit.settings import EMAIL_HOST_USER, TELEGRAM_BOT_TOKEN
 
 

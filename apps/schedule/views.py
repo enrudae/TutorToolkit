@@ -6,7 +6,6 @@ from apps.schedule.models import Lesson
 from apps.education_plan.models import EducationPlan
 from apps.schedule.serializers import LessonSerializerForTutorSerializer, LessonSerializerForStudentSerializer
 from TutorToolkit.permissions import IsTutor, IsTutorCreator
-from apps.notifications.models import Notification
 
 
 class LessonViewSet(mixins.ListModelMixin,
@@ -49,6 +48,9 @@ class LessonViewSet(mixins.ListModelMixin,
         instance.save()
 
     def perform_update(self, serializer):
+        original_date_start = serializer.instance.date_start
         serializer.save()
-        lesson = serializer.instance
-        NotificationService.handle_rescheduling(lesson.education_plan, lesson)
+        updated_lesson = serializer.instance
+
+        if original_date_start != updated_lesson.date_start:
+            NotificationService.handle_rescheduling(updated_lesson.education_plan, updated_lesson)
