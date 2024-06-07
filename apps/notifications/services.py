@@ -40,6 +40,7 @@ class NotificationService:
 
     @staticmethod
     def create_notification(plan, notification_type, text, content, lesson=None):
+        is_active = notification_type not in ('lesson_reminder', 'repetition_reminder')
 
         notification = Notification(
             text=text,
@@ -47,7 +48,8 @@ class NotificationService:
             type=notification_type,
             education_plan=plan,
             lesson=lesson,
-            recipient=plan.student
+            recipient=plan.student,
+            is_active=is_active
         )
         notification.save()
 

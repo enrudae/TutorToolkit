@@ -29,13 +29,17 @@ class SetTelegramID(APIView):
     def post(self, request, *args, **kwargs):
         from apps.education_plan.models import EducationPlan
         code = request.data.get('code')
+        role = request.data.get('role')
         telegram_id = request.data.get('telegram_id')
+
+        if role not in ['tutor', 'student']:
+            return Response({'message': 'Некорректная роль'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             plan = EducationPlan.objects.get(invite_code=code)
-            student = plan.student
+            profile = getattr(plan, role)
 
-            if student.telegram_id:
+            if profile.telegram_id:
                 return Response({'message': 'Профиль уже привязан к телеграм аккаунту'},
                                 status=status.HTTP_403_FORBIDDEN)
 
@@ -43,10 +47,14 @@ class SetTelegramID(APIView):
                 return Response({'message': 'Этот телеграм аккаунт уже привязан к профилю'},
                                 status=status.HTTP_403_FORBIDDEN)
 
-            student.telegram_id = telegram_id
-            student.save()
+            profile.telegram_id = telegram_id
+            profile.save()
 
             return Response({'message': 'Telegram ID успешно сохранен'}, status=status.HTTP_200_OK)
 
         except EducationPlan.DoesNotExist:
             return Response({'message': 'Профиль с указанным кодом не найден'}, status=status.HTTP_404_NOT_FOUND)
+
+        except AttributeError:
+            return Response({'message': 'Указанная роль не найдена в EducationPlan'},
+                            status=status.HTTP_400_BAD_REQUEST)

@@ -21,7 +21,7 @@ class LessonViewSet(mixins.ListModelMixin,
         profile = user.userprofile
         profile_field = profile.role
         plans = EducationPlan.objects.filter(Q(**{f'{profile_field}': profile}))
-        queryset = Lesson.objects.filter(education_plan__in=plans)
+        queryset = Lesson.objects.filter(education_plan__in=plans, is_canceled=False)
         return queryset
 
     def get_serializer_class(self):
