@@ -1,4 +1,5 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
+from django.utils import timezone
 from apps.notifications.models import Notification
 from apps.education_plan.services import StudentInvitationService
 from apps.notifications.tasks import send_notification
@@ -64,13 +65,25 @@ class NotificationService:
         if notification.type == 'lesson_reminder' and lesson:
             notification_time = lesson.date_start - timedelta(hours=3)
 
-            time_until_lesson = lesson.date_start - datetime.now()
+            time_until_lesson = lesson.date_start - timezone.now()
             if time_until_lesson < timedelta(hours=3):
                 return
 
-            send_notification.apply_async((student_id, notification.text, lesson.id), eta=notification_time, task_id=task_id)
+            send_notification.apply_async((student_id, notification.text, notification.id, lesson.id), eta=notification_time, task_id=task_id)
+
+        elif notification.type == 'repetition_reminder' and lesson:
+            notification_time = lesson.date_start
+            send_notification.apply_async((student_id, notification.text, notification.id, lesson.id), eta=notification_time,
+                                          task_id=task_id)
         else:
-            send_notification.apply_async((student_id, notification.text, lesson.id if lesson else None), task_id=task_id)
+            send_notification.apply_async((student_id, notification.text, notification.id, lesson.id if lesson else None), task_id=task_id)
+
+    # @staticmethod
+    # def cancel_notification_object(notification_for_cancelled):
+    #     task_id = f"notification-{notification_for_cancelled.id}"
+    #     notification_for_cancelled.delete()
+    #     res = celery_app.delete_task(task_id)
+    #     print(res)
 
     @staticmethod
     def cancel_lesson_reminder_notification(lesson):

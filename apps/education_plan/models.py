@@ -2,6 +2,7 @@ import random
 import string
 import uuid
 from django.db import models
+from django.utils import timezone
 from django.core.validators import RegexValidator
 from apps.account.models import UserProfile
 from apps.education_plan.tasks import change_card_status_to_repeat
@@ -115,16 +116,22 @@ class Card(models.Model):
     def handle_repetition_task(self):
         task_id = f"change_status-{self.id}"
 
-        # status = celery_app.delete_task(task_id)
-
-        if self.repetition_date:
+        if self.repetition_date > timezone.now():
             change_card_status_to_repeat.apply_async((self.id,), eta=self.repetition_date, task_id=task_id)
 
     def save(self, *args, **kwargs):
         if self.index is None and not self.is_template:
             self.index = self.module.cards.count()
+
+        if self.pk:
+            old_repetition_date = Card.objects.filter(pk=self.pk).values_list('repetition_date', flat=True).first()
+        else:
+            old_repetition_date = None
+
         super().save(*args, **kwargs)
-        self.handle_repetition_task()
+
+        if old_repetition_date != self.repetition_date:
+            self.handle_repetition_task()
 
     def create_template(self):
         template = Card.objects.create(
