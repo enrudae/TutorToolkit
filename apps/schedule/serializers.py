@@ -11,7 +11,9 @@ class LessonSerializerForTutorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ('id', 'title', 'date_start', 'date_end', 'discipline', 'first_name', 'last_name', 'plan_id', 'is_canceled', 'card')
+        fields = (
+            'id', 'title', 'date_start', 'date_end', 'discipline', 'first_name', 'last_name', 'plan_id', 'is_canceled',
+            'card')
         read_only_fields = ('id', 'discipline', 'first_name', 'last_name', 'is_canceled')
 
     def create(self, validated_data):
@@ -39,8 +41,10 @@ class LessonSerializerForStudentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ('id', 'title', 'date_start', 'date_end', 'discipline', 'first_name', 'last_name', 'is_canceled', 'card')
-        read_only_fields = ('id', 'title', 'date_start', 'date_end', 'discipline', 'first_name', 'last_name', 'is_canceled', 'card')
+        fields = (
+            'id', 'title', 'date_start', 'date_end', 'discipline', 'first_name', 'last_name', 'is_canceled', 'card')
+        read_only_fields = (
+            'id', 'title', 'date_start', 'date_end', 'discipline', 'first_name', 'last_name', 'is_canceled', 'card')
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

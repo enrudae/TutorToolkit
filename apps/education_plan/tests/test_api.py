@@ -2,7 +2,6 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
-
 from apps.account.serializers import ProfileSerializer
 from apps.education_plan.models import Label, EducationPlan, Module, Card
 from apps.education_plan.serializers import LabelSerializer, EducationPlanForStudentSerializer, \

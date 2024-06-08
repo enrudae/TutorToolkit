@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from apps.notifications.models import Notification
 from apps.education_plan.services import StudentInvitationService
 from apps.notifications.tasks import send_notification
@@ -63,6 +63,11 @@ class NotificationService:
 
         if notification.type == 'lesson_reminder' and lesson:
             notification_time = lesson.date_start - timedelta(hours=3)
+
+            time_until_lesson = lesson.date_start - datetime.now()
+            if time_until_lesson < timedelta(hours=3):
+                return
+
             send_notification.apply_async((student_id, notification.text, lesson.id), eta=notification_time, task_id=task_id)
         else:
             send_notification.apply_async((student_id, notification.text, lesson.id if lesson else None), task_id=task_id)

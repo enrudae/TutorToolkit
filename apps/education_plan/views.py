@@ -6,14 +6,25 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from apps.education_plan.models import EducationPlan, Module, Card, Label, File, CardContent, SectionContent
-from apps.education_plan.serializers import EducationPlanSerializer, ModuleSerializer, ModulesInEducationPlanSerializer, \
-    CardSerializer, LabelSerializer, EducationPlanForStudentSerializer, EducationPlanForTutorSerializer, \
-    MoveElementSerializer, FileSerializer, CardContentSerializer, SectionContentSerializer
 from TutorToolkit.permissions import IsTutor, IsStudent, IsTutorCreator
 from apps.education_plan.services import StudentInvitationService, MoveElementService
 from apps.account.serializers import ProfileSerializer
 from apps.notifications.services import NotificationService
+from apps.education_plan.models import EducationPlan, Module, Card, Label, File, CardContent, SectionContent
+
+from apps.education_plan.serializers import (
+    EducationPlanSerializer,
+    ModuleSerializer,
+    ModulesInEducationPlanSerializer,
+    CardSerializer,
+    LabelSerializer,
+    EducationPlanForStudentSerializer,
+    EducationPlanForTutorSerializer,
+    MoveElementSerializer,
+    FileSerializer,
+    CardContentSerializer,
+    SectionContentSerializer
+)
 
 
 class EducationPlanViewSet(mixins.ListModelMixin,
@@ -68,7 +79,7 @@ class ModuleViewSet(mixins.CreateModelMixin,
                     viewsets.GenericViewSet):
     serializer_class = ModuleSerializer
     permission_classes = (IsTutor,)
-
+    """Обеспечивает создание, обновление и удаление модулей."""
     def get_queryset(self):
         user = self.request.user
         queryset = Module.objects.filter(plan__tutor__user=user)
@@ -86,6 +97,8 @@ class CardViewSet(mixins.CreateModelMixin,
                   viewsets.GenericViewSet):
     serializer_class = CardSerializer
     permission_classes = (IsTutor,)
+    """Обеспечивает создание, обновление и удаление карточек, также предоставляет функционал для работы с шаблонами 
+    карточек. """
 
     def get_queryset(self):
         user = self.request.user
@@ -114,7 +127,7 @@ class CardViewSet(mixins.CreateModelMixin,
     def create_card_from_template(self, request, pk=None):
         template = get_object_or_404(Card, pk=pk)
         if not template.is_template:
-            return Response({"detail": "Only templates can be used to create new cards."},
+            return Response({"detail": "Только шаблон может использоваться для создания карточки."},
                             status=status.HTTP_400_BAD_REQUEST)
 
         module_id = request.data.get('module_id')
@@ -306,10 +319,3 @@ class TutorFilesView(APIView):
         file = get_object_or_404(File, id=file_id, tutor=profile)
         file.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class test_send(APIView):
-    def get(self, request):
-        from apps.notifications.tasks import send_notification
-        id = send_notification.delay(request.user.id, 'тест').id
-        return Response(data={'id': id}, status=status.HTTP_200_OK)
